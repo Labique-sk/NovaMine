@@ -1,6 +1,17 @@
 (() => {
   const $ = (id) => document.getElementById(id);
-  const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content || "";
+  function csrfHeaders() {
+    const raw = document.cookie.split("; ").find((row) => row.startsWith("XSRF-TOKEN="));
+    if (raw) {
+      try {
+        return { "X-XSRF-TOKEN": decodeURIComponent(raw.slice("XSRF-TOKEN=".length)) };
+      } catch {
+        return { "X-XSRF-TOKEN": raw.slice("XSRF-TOKEN=".length) };
+      }
+    }
+    const meta = document.querySelector('meta[name="csrf-token"]')?.content || "";
+    return meta ? { "X-CSRF-TOKEN": meta } : {};
+  }
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   let currentUser = null;
@@ -16,7 +27,8 @@
 
   async function api(path, options = {}) {
     const headers = Object.assign(
-      { Accept: "application/json", "X-CSRF-TOKEN": csrf(), "X-Requested-With": "XMLHttpRequest" },
+      { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+      csrfHeaders(),
       options.headers || {}
     );
     if (options.body && !(options.body instanceof FormData) && typeof options.body !== "string") {
