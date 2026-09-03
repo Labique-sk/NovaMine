@@ -313,7 +313,53 @@ class CsvImportTest extends TestCase
         $this->assertDatabaseCount('candidate_skills', 9); // 3 candidates with 3 skills each
     }
 
+    public function test_imported_candidates_appear_in_unfiltered_listing(): void
+    {
+        Storage::fake('local');
+
+        Candidate::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'GitHub Candidate',
+            'designation' => 'AI Engineer',
+            'source_name' => 'GitHub Public API',
+            'match_score' => 86,
+        ]);
+
+        $csvContent = implode("\n", [
+            'name,email,phone,designation,company,years_experience,location,industry',
+            '"labique","labiqsk@example.com","+14155551234","Data Scientist","Tech Corp",3,"pune","Technology"',
+            '"umar shaikh","umarsk@example.com","+14155556789","Data Scientist","Data Inc",5,"pune","Technology"',
+        ]);
+
+        $file = UploadedFile::fake()->createWithContent('candidates.csv', $csvContent);
+
+        $this->actingAs($this->user)
+            ->post('/api/import', ['csv_file' => $file])
+            ->assertOk()
+            ->assertJsonPath('results.imported', 2);
+
+        $all = $this->actingAs($this->user)
+            ->getJson('/api/candidates?sort=created_at&dir=desc&per_page=10');
+
+        $all->assertOk();
+        $allNames = collect($all->json('data'))->pluck('name')->all();
+        $this->assertContains('labique', $allNames);
+        $this->assertContains('umar shaikh', $allNames);
+        $this->assertContains('GitHub Candidate', $allNames);
+        $this->assertSame(3, $all->json('meta.total'));
+
+        $filtered = $this->actingAs($this->user)
+            ->getJson('/api/candidates?min_score=78&role=AI Engineer&per_page=10');
+
+        $filtered->assertOk();
+        $filteredNames = collect($filtered->json('data'))->pluck('name')->all();
+        $this->assertContains('GitHub Candidate', $filteredNames);
+        $this->assertNotContains('labique', $filteredNames);
+        $this->assertNotContains('umar shaikh', $filteredNames);
+    }
+
     public function test_user_isolation(): void
+
     {
         Storage::fake('local');
         

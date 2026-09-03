@@ -186,7 +186,6 @@
     
     const params = new URLSearchParams({
       q: $("search").value.trim(),
-      min_score: $("minScore").value,
       page: String(page),
       per_page: "10",
       sort: showAllCandidates ? "created_at" : sortKey,
@@ -195,6 +194,7 @@
     
     // Only add filters if not in "All Candidates" mode
     if (!showAllCandidates) {
+      params.set("min_score", $("minScore").value);
       if (role) params.set("role", role);
       if (location) params.set("location", location);
       if (experience_min) params.set("experience_min", experience_min);
@@ -722,6 +722,8 @@
       }
       $("importResults").classList.remove("hidden");
       toast(result.message);
+      showAllCandidates = true;
+      page = 1;
       loadCandidates();
     } catch (e) {
       toast(e.message || "Import failed");
