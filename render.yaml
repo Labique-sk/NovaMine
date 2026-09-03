@@ -1,12 +1,11 @@
-services:
-  # PostgreSQL Database
-  - type: pserv
-    name: novamine-db
+databases:
+  - name: novamine-db
     databaseName: novamine
     user: novamine_user
     plan: free
     region: oregon
-    
+
+services:
   # Laravel Web Service
   - type: web
     name: novamine-web
@@ -34,27 +33,27 @@ services:
         value: pgsql
       - key: DB_HOST
         fromService:
-          type: pserv
+          type: psql
           name: novamine-db
           property: host
       - key: DB_PORT
         fromService:
-          type: pserv
+          type: psql
           name: novamine-db
           property: port
       - key: DB_DATABASE
         fromService:
-          type: pserv
+          type: psql
           name: novamine-db
           property: database
       - key: DB_USERNAME
         fromService:
-          type: pserv
+          type: psql
           name: novamine-db
           property: user
       - key: DB_PASSWORD
         fromService:
-          type: pserv
+          type: psql
           name: novamine-db
           property: password
       - key: CACHE_DRIVER
@@ -89,27 +88,27 @@ services:
         value: pgsql
       - key: DB_HOST
         fromService:
-          type: pserv
+          type: psql
           name: novamine-db
           property: host
       - key: DB_PORT
         fromService:
-          type: pserv
+          type: psql
           name: novamine-db
           property: port
       - key: DB_DATABASE
         fromService:
-          type: pserv
+          type: psql
           name: novamine-db
           property: database
       - key: DB_USERNAME
         fromService:
-          type: pserv
+          type: psql
           name: novamine-db
           property: user
       - key: DB_PASSWORD
         fromService:
-          type: pserv
+          type: psql
           name: novamine-db
           property: password
       - key: CACHE_DRIVER
