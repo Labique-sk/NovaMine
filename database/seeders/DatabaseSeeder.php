@@ -15,11 +15,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create demo user for testing
-        User::factory()->create([
-            'name' => 'Demo User',
-            'email' => 'demo@novamine.ai',
-            'password' => 'demo1234', // Will be hashed by the model
-        ]);
+        // Create demo user for testing only if it doesn't exist
+        if (!User::where('email', 'demo@novamine.ai')->exists()) {
+            User::factory()->create([
+                'name' => 'Demo User',
+                'email' => 'demo@novamine.ai',
+                'password' => 'demo1234', // Will be hashed by the model
+            ]);
+        }
     }
 }

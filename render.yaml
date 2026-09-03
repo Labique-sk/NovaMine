@@ -1,0 +1,124 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: novamine-db
+    databaseName: novamine
+    user: novamine_user
+    plan: free
+    region: oregon
+    
+  # Laravel Web Service
+  - type: web
+    name: novamine-web
+    runtime: php
+    plan: free
+    region: oregon
+    buildCommand: |
+      composer install --no-dev --optimize-autoloader --no-interaction
+      php artisan migrate --force
+      php artisan db:seed --force
+      php artisan storage:link
+      php artisan config:cache
+      php artisan route:cache
+    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        sync: true
+      - key: APP_URL
+        value: https://your-app-name.onrender.com
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: novamine-db
+          property: host
+      - key: DB_PORT
+        fromService:
+          type: pserv
+          name: novamine-db
+          property: port
+      - key: DB_DATABASE
+        fromService:
+          type: pserv
+          name: novamine-db
+          property: database
+      - key: DB_USERNAME
+        fromService:
+          type: pserv
+          name: novamine-db
+          property: user
+      - key: DB_PASSWORD
+        fromService:
+          type: pserv
+          name: novamine-db
+          property: password
+      - key: CACHE_DRIVER
+        value: database
+      - key: SESSION_DRIVER
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: SESSION_SECURE_COOKIE
+        value: true
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+
+  # Queue Worker for Mining Jobs
+  - type: worker
+    name: novamine-queue
+    runtime: php
+    plan: free
+    region: oregon
+    buildCommand: composer install --no-dev --optimize-autoloader --no-interaction
+    startCommand: php artisan queue:work --tries=3 --timeout=120 --sleep=3 --max-jobs=1000
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        sync: true
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: novamine-db
+          property: host
+      - key: DB_PORT
+        fromService:
+          type: pserv
+          name: novamine-db
+          property: port
+      - key: DB_DATABASE
+        fromService:
+          type: pserv
+          name: novamine-db
+          property: database
+      - key: DB_USERNAME
+        fromService:
+          type: pserv
+          name: novamine-db
+          property: user
+      - key: DB_PASSWORD
+        fromService:
+          type: pserv
+          name: novamine-db
+          property: password
+      - key: CACHE_DRIVER
+        value: database
+      - key: SESSION_DRIVER
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
