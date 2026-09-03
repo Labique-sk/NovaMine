@@ -3,12 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateCandidateRequest;
 use App\Http\Requests\UpdateCandidateRequest;
 use App\Models\Candidate;
 use App\Models\Shortlist;
+use App\Services\Intelligence\CandidateScoringService;
+use App\Services\Mining\CandidateDeduplicator;
+use App\Services\Mining\CandidateValidator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CandidateController extends Controller
 {
@@ -81,6 +86,126 @@ class CandidateController extends Controller
                 'total' => $page->total(),
             ],
         ]);
+    }
+
+    public function store(CreateCandidateRequest $request, CandidateValidator $validator, CandidateDeduplicator $deduplicator, CandidateScoringService $scoring): JsonResponse
+    {
+        $user = $request->user();
+        
+        // Prepare candidate data in the format expected by existing services
+        $record = array_merge($request->validated(), [
+            'is_synthetic' => false,
+            'source_name' => $request->input('source_name', 'Manual Entry'),
+            'source_url' => $request->input('source_url'),
+        ]);
+
+        // Normalize the record using existing normalizer
+        $normalizer = app(\App\Services\Mining\CandidateNormalizer::class);
+        $normalized = $normalizer->normalize($record);
+
+        // Validate using existing validator
+        $validation = $validator->validate($normalized);
+        $normalized['verification_status'] = $validation['status'];
+        $normalized['email_validation_status'] = $validation['email'];
+        $normalized['phone_validation_status'] = $validation['phone'];
+        $normalized['profile_validation_status'] = $validation['profile'];
+        $normalized['validation'] = $validation;
+
+        // Check for duplicates using existing deduplicator
+        $dedupeResult = $deduplicator->dedupe($user, [$normalized]);
+        
+        if (empty($dedupeResult['unique'])) {
+            return response()->json([
+                'message' => 'This candidate already exists in your database.',
+                'duplicates' => $dedupeResult['duplicates'],
+            ], 409);
+        }
+
+        // Score the candidate using existing scoring service
+        $recordToSave = $dedupeResult['unique'][0];
+        $criteria = ['role' => $recordToSave['designation'] ?? ''];
+        $score = $scoring->score($recordToSave, $criteria);
+        $recordToSave['score'] = $score;
+        $recordToSave['match_score'] = $score['match_score'] ?? null;
+        $recordToSave['score_breakdown'] = $score;
+
+        // Save using existing database logic from mining pipeline
+        $candidate = DB::transaction(function () use ($user, $recordToSave) {
+            $candidate = Candidate::query()->create([
+                'user_id' => $user->id,
+                'mining_job_id' => null, // Manual entry has no mining job
+                'name' => $recordToSave['name'],
+                'designation' => $recordToSave['designation'] ?? null,
+                'company' => $recordToSave['company'] ?? null,
+                'years_experience' => $recordToSave['years_experience'] ?? null,
+                'industry' => $recordToSave['industry'] ?? null,
+                'location' => $recordToSave['location'] ?? null,
+                'professional_email' => $recordToSave['professional_email'] ?? null,
+                'phone' => $recordToSave['phone'] ?? null,
+                'profile_url' => $recordToSave['profile_url'] ?? null,
+                'portfolio_url' => $recordToSave['portfolio_url'] ?? null,
+                'source_url' => $recordToSave['source_url'] ?? null,
+                'source_name' => $recordToSave['source_name'] ?? 'Manual Entry',
+                'candidate_type' => $recordToSave['candidate_type'] ?? null,
+                'verification_status' => $recordToSave['verification_status'] ?? 'unverified',
+                'email_validation_status' => $recordToSave['email_validation_status'] ?? null,
+                'phone_validation_status' => $recordToSave['phone_validation_status'] ?? null,
+                'profile_validation_status' => $recordToSave['profile_validation_status'] ?? null,
+                'duplicate_status' => $recordToSave['duplicate_status'] ?? 'unique',
+                'match_score' => $recordToSave['match_score'] ?? null,
+                'score_breakdown' => $recordToSave['score_breakdown'] ?? null,
+                'is_synthetic' => (bool) ($recordToSave['is_synthetic'] ?? false),
+            ]);
+
+            // Save skills
+            foreach ($recordToSave['skills'] ?? [] as $skill) {
+                $matching = in_array($skill, $recordToSave['score']['matching_skills'] ?? [], true);
+                $candidate->skills()->create(['name' => $skill, 'is_match' => $matching]);
+            }
+
+            // Save education
+            foreach ($recordToSave['education'] ?? [] as $edu) {
+                if (is_string($edu)) {
+                    $edu = ['credential' => $edu];
+                }
+                $candidate->education()->create([
+                    'institution' => $edu['institution'] ?? null,
+                    'credential' => $edu['credential'] ?? null,
+                    'field' => $edu['field'] ?? null,
+                    'year' => $edu['year'] ?? null,
+                ]);
+            }
+
+            // Save contacts
+            if (! empty($recordToSave['professional_email'])) {
+                $candidate->contacts()->create(['type' => 'email', 'value' => $recordToSave['professional_email'], 'is_public' => true]);
+            }
+            if (! empty($recordToSave['phone'])) {
+                $candidate->contacts()->create(['type' => 'phone', 'value' => $recordToSave['phone'], 'is_public' => true]);
+            }
+
+            // Save source
+            $candidate->sources()->create([
+                'source_name' => $recordToSave['source_name'] ?? 'Manual Entry',
+                'source_url' => $recordToSave['source_url'] ?? null,
+                'collected_at' => now(),
+            ]);
+
+            // Save validation results
+            foreach ($recordToSave['validation']['results'] ?? [] as $result) {
+                $candidate->validationResults()->create([
+                    'type' => $result['type'],
+                    'status' => $result['status'],
+                    'message' => $result['message'] ?? null,
+                    'http_status' => $result['http_status'] ?? null,
+                    'checked_at' => now(),
+                ]);
+            }
+
+            return $candidate;
+        });
+
+        return response()->json(['candidate' => $this->detail($candidate->fresh(['skills', 'education', 'sources', 'validationResults', 'shortlists']))], 201);
     }
 
     public function show(Request $request, Candidate $candidate): JsonResponse

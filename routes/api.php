@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::post('mining/{mining}/cancel', [MiningController::class, 'cancel']);
 
     Route::get('candidates', [CandidateController::class, 'index']);
+    Route::post('candidates', [CandidateController::class, 'store']);
     Route::get('candidates/{candidate}', [CandidateController::class, 'show']);
     Route::put('candidates/{candidate}', [CandidateController::class, 'update']);
     Route::delete('candidates/{candidate}', [CandidateController::class, 'destroy']);
