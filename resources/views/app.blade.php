@@ -152,7 +152,7 @@
       </div>
     </aside>
     <div class="results">
-      <div class="toolbar glass"><div class="search"><svg class="icon"><use href="#i-search"/></svg><input class="input" id="search" placeholder="Search name, role, company, skill, location…"></div><button class="ghost" id="filter" type="button">Filters</button><button class="ghost" id="exportBtn" type="button">Export</button></div>
+      <div class="toolbar glass"><div class="search"><svg class="icon"><use href="#i-search"/></svg><input class="input" id="search" placeholder="Search name, role, company, skill, location…"></div><button class="ghost" id="filter" type="button">Filters</button><button class="ghost" id="allCandidatesBtn" type="button">All Candidates</button><button class="ghost" id="importBtn" type="button">Import CSV</button><button class="ghost" id="exportBtn" type="button">Export</button></div>
       <div class="tablecard glass"><div class="tablewrap"><table class="table"><thead><tr><th data-sort="name">Candidate ↕</th><th data-sort="role">Role ↕</th><th data-sort="company">Company ↕</th><th data-sort="location">Location ↕</th><th data-sort="experience">Exp ↕</th><th data-sort="score">Match ↕</th><th>Status</th></tr></thead><tbody id="candidateBody"></tbody></table></div><div class="pagination"><span id="pageInfo">0 candidates</span><div class="pages" id="pages"></div></div></div>
     </div>
   </div>
@@ -203,6 +203,39 @@
     </div>
   </div>
 </section>
+
+<div id="importModal" class="modal hidden">
+  <div class="modal-content glass">
+    <div class="modal-header">
+      <h2>Import Candidates from CSV</h2>
+      <button class="close-modal" id="closeImportModal" type="button">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="muted" style="margin-bottom:16px">Upload a CSV file to import candidates. Maximum file size: 10MB.</p>
+      
+      <div class="field">
+        <label>CSV File</label>
+        <input class="input" id="csvFile" type="file" accept=".csv,text/plain">
+        <small class="muted">Accepted formats: .csv only</small>
+      </div>
+      
+      <div class="import-actions" style="margin-top:16px">
+        <button class="ghost" id="downloadTemplate" type="button">Download Template</button>
+        <button class="primary" id="importSubmit" type="button">Import CSV</button>
+      </div>
+      
+      <div id="importResults" class="import-results hidden" style="margin-top:16px">
+        <div class="import-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+          <div class="stat small glass"><small>Total Rows</small><strong id="importTotal">0</strong></div>
+          <div class="stat small glass"><small>Imported</small><strong id="importImported">0</strong></div>
+          <div class="stat small glass"><small>Duplicates</small><strong id="importDuplicates">0</strong></div>
+          <div class="stat small glass"><small>Invalid</small><strong id="importInvalid">0</strong></div>
+        </div>
+        <div id="importErrors" class="import-errors" style="max-height:200px;overflow-y:auto"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 </main>
 

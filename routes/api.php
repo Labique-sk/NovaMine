@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\CandidateController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExportController;
 use App\Http\Controllers\Api\GoogleController;
+use App\Http\Controllers\Api\ImportController;
 use App\Http\Controllers\Api\MiningController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\SettingsController;
@@ -49,6 +50,10 @@ Route::middleware('auth')->group(function () {
     Route::get('exports', [ExportController::class, 'index']);
     Route::post('exports', [ExportController::class, 'store'])->middleware('throttle:20,1');
     Route::get('exports/{export}/download', [ExportController::class, 'download']);
+
+    Route::get('import/template', [ImportController::class, 'downloadTemplate']);
+    Route::post('import', [ImportController::class, 'import'])->middleware('throttle:10,1');
+    Route::get('import/error-report', [ImportController::class, 'downloadErrorReport']);
 
     Route::get('google/status', [GoogleController::class, 'status']);
     Route::post('google/connect', [GoogleController::class, 'connect']);

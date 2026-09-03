@@ -35,7 +35,13 @@ class CandidateController extends Controller
 
         foreach (['location', 'industry', 'source_name', 'verification_status', 'designation'] as $column) {
             if ($request->filled($column)) {
-                $query->where($column, $request->string($column));
+                $value = $request->string($column);
+                // Use LIKE for location to handle partial matches
+                if ($column === 'location') {
+                    $query->where($column, 'like', '%' . $value . '%');
+                } else {
+                    $query->where($column, $value);
+                }
             }
         }
         if ($request->filled('skill')) {

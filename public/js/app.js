@@ -19,6 +19,7 @@
   let sortKey = "score";
   let sortDir = "desc";
   let page = 1;
+  let showAllCandidates = false;
   let charts = {};
   let miningJobId = null;
   let miningPoll = null;
@@ -167,14 +168,41 @@
 
   async function loadCandidates() {
     $("candidateBody").innerHTML = `<tr class="loading-row"><td colspan="7">Loading candidates…</td></tr>`;
+    
+    // Get mining configuration filters
+    const role = $("role")?.value?.trim() || "";
+    const location = $("location")?.value || "";
+    const experience = $("experience")?.value || "";
+    const industry = $("industry")?.value?.trim() || "";
+    const skills = $("skills")?.value?.trim() || "";
+    
+    // Convert experience range to min/max values
+    let experience_min = "";
+    let experience_max = "";
+    if (experience === "0–2 years") { experience_min = "0"; experience_max = "2"; }
+    else if (experience === "2–5 years") { experience_min = "2"; experience_max = "5"; }
+    else if (experience === "5–8 years") { experience_min = "5"; experience_max = "8"; }
+    else if (experience === "8+ years") { experience_min = "8"; }
+    
     const params = new URLSearchParams({
       q: $("search").value.trim(),
       min_score: $("minScore").value,
       page: String(page),
       per_page: "10",
-      sort: sortKey,
-      dir: sortDir,
+      sort: showAllCandidates ? "created_at" : sortKey,
+      dir: showAllCandidates ? "desc" : sortDir,
     });
+    
+    // Only add filters if not in "All Candidates" mode
+    if (!showAllCandidates) {
+      if (role) params.set("role", role);
+      if (location) params.set("location", location);
+      if (experience_min) params.set("experience_min", experience_min);
+      if (experience_max) params.set("experience_max", experience_max);
+      if (industry) params.set("industry", industry);
+      if (skills) params.set("skill", skills);
+    }
+    
     const data = await api("/api/candidates?" + params.toString());
     const rows = data.data || [];
     $("exportCount").textContent = data.meta?.total ?? 0;
@@ -585,7 +613,18 @@
     await api("/api/mining/" + miningJobId + "/cancel", { method: "POST" });
   };
   $("exportBtn").onclick = () => nav("exports");
-  $("filter").onclick = () => toast("Use the score slider and search field to refine the dataset");
+  $("filter").onclick = () => { 
+    showAllCandidates = false; 
+    page = 1; 
+    loadCandidates(); 
+    toast("Filters applied");
+  };
+  $("allCandidatesBtn").onclick = () => { 
+    showAllCandidates = true; 
+    page = 1; 
+    loadCandidates(); 
+    toast("Showing all candidates");
+  };
   $("search").addEventListener("input", () => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => { page = 1; loadCandidates(); }, 280);
@@ -602,6 +641,13 @@
     document.querySelectorAll("#types .chip").forEach((x) => x.classList.remove("on"));
     c.classList.add("on");
   });
+  
+  // Add event listeners for mining configuration filters to refresh candidate list
+  if ($("role")) $("role").addEventListener("input", () => { showAllCandidates = false; page = 1; loadCandidates(); });
+  if ($("location")) $("location").addEventListener("change", () => { showAllCandidates = false; page = 1; loadCandidates(); });
+  if ($("experience")) $("experience").addEventListener("change", () => { showAllCandidates = false; page = 1; loadCandidates(); });
+  if ($("industry")) $("industry").addEventListener("input", () => { showAllCandidates = false; page = 1; loadCandidates(); });
+  if ($("skills")) $("skills").addEventListener("input", () => { showAllCandidates = false; page = 1; loadCandidates(); });
   document.querySelectorAll("[data-export]").forEach((b) => b.onclick = () => createExport(b.dataset.export));
   $("createShortlist").onclick = async () => {
     const name = $("shortlistName").value.trim();
@@ -620,11 +666,76 @@
   $("openTerms").onclick = () => openOverlay("termsOverlay");
   $("closeTerms").onclick = () => closeOverlay("termsOverlay");
   $("termsOverlay").onclick = (e) => { if (e.target === $("termsOverlay")) closeOverlay("termsOverlay"); };
+
+  // CSV Import Modal
+  $("importBtn").onclick = () => $("importModal").classList.remove("hidden");
+  $("closeImportModal").onclick = () => {
+    $("importModal").classList.add("hidden");
+    $("importResults").classList.add("hidden");
+    $("csvFile").value = "";
+  };
+  $("downloadTemplate").onclick = async () => {
+    try {
+      const res = await fetch("/api/import/template");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "novamine_import_template.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      toast("Failed to download template");
+    }
+  };
+  $("importSubmit").onclick = async () => {
+    const fileInput = $("csvFile");
+    if (!fileInput.files.length) {
+      toast("Please select a CSV file");
+      return;
+    }
+    const file = fileInput.files[0];
+    if (file.size > 10 * 1024 * 1024) {
+      toast("File size exceeds 10MB limit");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("csv_file", file);
+    try {
+      $("importSubmit").disabled = true;
+      $("importSubmit").textContent = "Importing...";
+      const result = await api("/api/import", { method: "POST", body: formData });
+      $("importTotal").textContent = result.results.total_rows;
+      $("importImported").textContent = result.results.imported;
+      $("importDuplicates").textContent = result.results.duplicates;
+      $("importInvalid").textContent = result.results.invalid;
+      const errorsDiv = $("importErrors");
+      errorsDiv.innerHTML = "";
+      if (result.results.errors.length > 0) {
+        result.results.errors.forEach(err => {
+          const div = document.createElement("div");
+          div.textContent = `Row ${err.row}: ${err.message}`;
+          errorsDiv.appendChild(div);
+        });
+      } else {
+        errorsDiv.innerHTML = "<div style='color:var(--green)'>No errors</div>";
+      }
+      $("importResults").classList.remove("hidden");
+      toast(result.message);
+      loadCandidates();
+    } catch (e) {
+      toast(e.message || "Import failed");
+    } finally {
+      $("importSubmit").disabled = false;
+      $("importSubmit").textContent = "Import CSV";
+    }
+  };
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       closeOverlay("privacyOverlay");
       closeOverlay("termsOverlay");
       $("drawer").classList.remove("open");
+      $("importModal").classList.add("hidden");
     }
   });
 
