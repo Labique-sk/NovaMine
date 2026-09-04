@@ -9,17 +9,11 @@ services:
   # Laravel Web Service
   - type: web
     name: novamine-web
-    runtime: php
     plan: free
     region: oregon
-    buildCommand: |
-      composer install --no-dev --optimize-autoloader --no-interaction
-      php artisan migrate --force
-      php artisan db:seed --force
-      php artisan storage:link
-      php artisan config:cache
-      php artisan route:cache
-    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+    dockerContext: .
+    dockerfilePath: ./Dockerfile
+    startCommand: ./start.sh
     envVars:
       - key: APP_ENV
         value: production
@@ -32,28 +26,23 @@ services:
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        fromService:
-          type: psql
+        fromDatabase:
           name: novamine-db
           property: host
       - key: DB_PORT
-        fromService:
-          type: psql
+        fromDatabase:
           name: novamine-db
           property: port
       - key: DB_DATABASE
-        fromService:
-          type: psql
+        fromDatabase:
           name: novamine-db
           property: database
       - key: DB_USERNAME
-        fromService:
-          type: psql
+        fromDatabase:
           name: novamine-db
           property: user
       - key: DB_PASSWORD
-        fromService:
-          type: psql
+        fromDatabase:
           name: novamine-db
           property: password
       - key: CACHE_DRIVER
@@ -72,11 +61,11 @@ services:
   # Queue Worker for Mining Jobs
   - type: worker
     name: novamine-queue
-    runtime: php
     plan: free
     region: oregon
-    buildCommand: composer install --no-dev --optimize-autoloader --no-interaction
-    startCommand: php artisan queue:work --tries=3 --timeout=120 --sleep=3 --max-jobs=1000
+    dockerContext: .
+    dockerfilePath: ./Dockerfile
+    startCommand: ./worker.sh
     envVars:
       - key: APP_ENV
         value: production
@@ -87,28 +76,23 @@ services:
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        fromService:
-          type: psql
+        fromDatabase:
           name: novamine-db
           property: host
       - key: DB_PORT
-        fromService:
-          type: psql
+        fromDatabase:
           name: novamine-db
           property: port
       - key: DB_DATABASE
-        fromService:
-          type: psql
+        fromDatabase:
           name: novamine-db
           property: database
       - key: DB_USERNAME
-        fromService:
-          type: psql
+        fromDatabase:
           name: novamine-db
           property: user
       - key: DB_PASSWORD
-        fromService:
-          type: psql
+        fromDatabase:
           name: novamine-db
           property: password
       - key: CACHE_DRIVER
