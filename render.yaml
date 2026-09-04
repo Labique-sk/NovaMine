@@ -21,9 +21,9 @@ services:
       - key: APP_DEBUG
         value: false
       - key: APP_KEY
-        sync: true
+        value: base64:uZuMZv7PeUt+0SDhiHE9P6Uk9QOHHydusfAIk2u1IU4=
       - key: APP_URL
-        sync: true
+        value: https://novamine-web.onrender.com
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
@@ -74,7 +74,7 @@ services:
       - key: APP_DEBUG
         value: false
       - key: APP_KEY
-        sync: true
+        value: base64:uZuMZv7PeUt+0SDhiHE9P6Uk9QOHHydusfAIk2u1IU4=
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
