@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    libpq-dev \
     zip \
     unzip \
     && rm -rf /var/lib/apt/lists/*
@@ -24,7 +25,7 @@ WORKDIR /app
 COPY . /app
 
 # Make scripts executable
-RUN chmod +x /app/start.sh /app/worker.sh
+RUN chmod +x /app/start.sh
 
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
