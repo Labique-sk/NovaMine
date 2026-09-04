@@ -52,7 +52,10 @@ class CandidateController extends Controller
             $query->where('designation', 'like', '%'.$request->string('role').'%');
         }
         if ($request->filled('min_score')) {
-            $query->where('match_score', '>=', $request->integer('min_score'));
+            $query->where(function (Builder $query) use ($request) {
+                $query->where('match_score', '>=', $request->integer('min_score'))
+                      ->orWhereNull('match_score');
+            });
         }
         if ($request->filled('experience_min')) {
             $query->where('years_experience', '>=', $request->integer('experience_min'));

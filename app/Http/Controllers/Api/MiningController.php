@@ -34,9 +34,22 @@ class MiningController extends Controller
             'properties' => ['query' => $job->query],
         ]);
 
-        ProcessMiningJob::dispatch($job);
+        try {
+            ProcessMiningJob::dispatchSync($job);
+        } catch (\Exception $e) {
+            $job->update([
+                'status' => 'failed',
+                'stage' => 'Failed',
+                'completed_at' => now(),
+            ]);
 
-        return response()->json(['job' => $job], 201);
+            return response()->json([
+                'message' => 'Mining failed: ' . $e->getMessage(),
+                'job' => $job->fresh(),
+            ], 500);
+        }
+
+        return response()->json(['job' => $job->fresh()], 201);
     }
 
     public function show(Request $request, MiningJob $mining): JsonResponse

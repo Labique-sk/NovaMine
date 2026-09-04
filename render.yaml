@@ -51,7 +51,7 @@ services:
       - key: SESSION_DRIVER
         value: database
       - key: QUEUE_CONNECTION
-        value: database
+        value: sync
       - key: SESSION_SECURE_COOKIE
         value: true
       - key: LOG_CHANNEL

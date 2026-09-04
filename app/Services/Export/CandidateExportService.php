@@ -117,7 +117,10 @@ class CandidateExportService
             });
         }
         if (isset($filters['min_score'])) {
-            $query->where('match_score', '>=', (int) $filters['min_score']);
+            $query->where(function (Builder $scoreQuery) use ($filters) {
+                $scoreQuery->where('match_score', '>=', (int) $filters['min_score'])
+                      ->orWhereNull('match_score');
+            });
         }
         if (! empty($filters['ids']) && is_array($filters['ids'])) {
             $query->whereIn('id', $filters['ids']);
