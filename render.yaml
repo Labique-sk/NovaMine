@@ -11,9 +11,10 @@ services:
     name: novamine-web
     plan: free
     region: oregon
+    runtime: docker
     dockerContext: .
     dockerfilePath: ./Dockerfile
-    startCommand: ./start.sh
+    dockerCommand: ./start.sh
     envVars:
       - key: APP_ENV
         value: production
@@ -22,7 +23,7 @@ services:
       - key: APP_KEY
         sync: true
       - key: APP_URL
-        value: https://your-app-name.onrender.com
+        sync: true
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
@@ -63,9 +64,10 @@ services:
     name: novamine-queue
     plan: free
     region: oregon
+    runtime: docker
     dockerContext: .
     dockerfilePath: ./Dockerfile
-    startCommand: ./worker.sh
+    dockerCommand: ./worker.sh
     envVars:
       - key: APP_ENV
         value: production
