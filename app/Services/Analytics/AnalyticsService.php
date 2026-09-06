@@ -183,28 +183,51 @@ class AnalyticsService
     {
         $labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
         $data = array_fill(0, 7, 0);
-        $rows = Candidate::query()
-            ->ownedBy($user)
-            ->selectRaw('CAST(strftime("%w", created_at) AS INTEGER) as dow, COUNT(*) as c')
-            ->groupBy('dow')
-            ->pluck('c', 'dow');
 
-        if (config('database.default') !== 'sqlite') {
+        $driver = config('database.default');
+
+        // Build driver-specific SQL to extract day-of-week as 0=Sunday..6=Saturday
+        if ($driver === 'sqlite') {
             $rows = Candidate::query()
                 ->ownedBy($user)
-                ->selectRaw('DAYOFWEEK(created_at) as dow, COUNT(*) as c')
+                ->selectRaw('CAST(strftime("%w", created_at) AS INTEGER) as dow, COUNT(*) as c')
                 ->groupBy('dow')
                 ->pluck('c', 'dow');
+
+            // SQLite: dow 0 = Sunday
             foreach ($rows as $dow => $count) {
-                $idx = ((int) $dow + 5) % 7;
+                $idx = ((int) $dow + 6) % 7; // map Sunday(0) -> 6, Monday(1) -> 0, ...
                 $data[$idx] = (int) $count;
             }
 
             return ['labels' => $labels, 'data' => $data];
         }
 
+        if ($driver === 'mysql' || $driver === 'mysql2') {
+            // MySQL: DAYOFWEEK returns 1=Sunday..7=Saturday
+            $rows = Candidate::query()
+                ->ownedBy($user)
+                ->selectRaw('DAYOFWEEK(created_at) as dow, COUNT(*) as c')
+                ->groupBy('dow')
+                ->pluck('c', 'dow');
+
+            foreach ($rows as $dow => $count) {
+                $idx = ((int) $dow + 5) % 7; // map Sunday(1) -> 6, Monday(2) -> 0, ...
+                $data[$idx] = (int) $count;
+            }
+
+            return ['labels' => $labels, 'data' => $data];
+        }
+
+        // Fallback / PostgreSQL: use EXTRACT(DOW FROM timestamp) -> 0=Sunday..6=Saturday
+        $rows = Candidate::query()
+            ->ownedBy($user)
+            ->selectRaw('CAST(EXTRACT(DOW FROM created_at) AS INTEGER) as dow, COUNT(*) as c')
+            ->groupBy('dow')
+            ->pluck('c', 'dow');
+
         foreach ($rows as $dow => $count) {
-            $idx = ((int) $dow + 6) % 7;
+            $idx = ((int) $dow + 6) % 7; // map Sunday(0) -> 6, Monday(1) -> 0, ...
             $data[$idx] = (int) $count;
         }
 
