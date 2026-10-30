@@ -60,4 +60,10 @@ return [
         'result_limit' => env('TAVILY_SEARCH_RESULT_LIMIT', 10),
     ],
 
+    'pdl' => [
+        'enabled' => env('PDL_ENABLED', false),
+        'api_key' => env('PDL_API_KEY'),
+        'result_limit' => env('PDL_SEARCH_RESULT_LIMIT', 10),
+    ],
+
 ];

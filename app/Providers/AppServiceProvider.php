@@ -6,6 +6,7 @@ use App\Services\Intelligence\CandidateIntelligenceProviderInterface;
 use App\Services\Intelligence\RuleBasedIntelligenceProvider;
 use App\Services\Sources\BraveWebSearchAdapter;
 use App\Services\Sources\GenericSearchAdapter;
+use App\Services\Sources\PeopleDataLabsAdapter;
 use App\Services\Sources\PublicDatasetAdapter;
 use App\Services\Sources\SourceAdapterInterface;
 use App\Services\Sources\SourceAdapterRegistry;
@@ -25,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->tag([
             PublicDatasetAdapter::class,
             GenericSearchAdapter::class,
+            PeopleDataLabsAdapter::class,
             BraveWebSearchAdapter::class,
             TavilySearchAdapter::class,
             UserProvidedUrlAdapter::class,
