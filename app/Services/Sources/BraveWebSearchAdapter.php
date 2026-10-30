@@ -22,6 +22,11 @@ class BraveWebSearchAdapter implements SourceAdapterInterface
 
     public function collect(array $criteria): array
     {
+        // Prefer the free Tavily configuration when both providers are set up.
+        if ((string) config('services.tavily.key') !== '') {
+            return [];
+        }
+
         $apiKey = (string) config('services.brave_search.key');
         $role = trim((string) ($criteria['role'] ?? ''));
         if ($apiKey === '' || $role === '') {

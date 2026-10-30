@@ -54,4 +54,9 @@ return [
         'result_limit' => env('BRAVE_SEARCH_RESULT_LIMIT', 10),
     ],
 
+    'tavily' => [
+        'key' => env('TAVILY_API_KEY'),
+        'result_limit' => env('TAVILY_SEARCH_RESULT_LIMIT', 10),
+    ],
+
 ];

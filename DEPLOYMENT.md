@@ -10,7 +10,7 @@ The blueprint generates an `APP_KEY` for a new service. Keep it stable after dep
 
 ## Configure live sourcing
 
-Add `BRAVE_SEARCH_API_KEY` in the Render web service's Environment settings. The blueprint declares a secret input for new services. Render does not prompt for a new `sync: false` value when updating an existing Blueprint, so existing services need this key added manually. `BRAVE_SEARCH_RESULT_LIMIT` defaults to 10.
+Add `TAVILY_API_KEY` in the Render web service's Environment settings. The blueprint declares a secret input for new services. Render does not prompt for a new `sync: false` value when updating an existing Blueprint, so existing services need this key added manually. `TAVILY_SEARCH_RESULT_LIMIT` defaults to 10. Brave Search is an optional alternate provider; set `BRAVE_SEARCH_API_KEY` if you already have one.
 
 GitHub public API discovery is available for technical roles. Set `GITHUB_TOKEN` in the service environment if you need higher API rate limits.
 
@@ -24,7 +24,7 @@ Candidate discovery produces source-backed leads, not verified applicants. Revie
 
 ## Troubleshooting
 
-- If live web searches return no results, confirm `BRAVE_SEARCH_API_KEY` is set and redeploy to refresh cached configuration.
+- If live web searches return no results, confirm `TAVILY_API_KEY` (or the optional Brave key) is set and redeploy to refresh cached configuration.
 - If the app cannot connect to PostgreSQL, confirm `novamine-db` is healthy and the `DB_*` variables are linked.
 - If mining requests time out, move queue processing to a persistent backend and worker.
 

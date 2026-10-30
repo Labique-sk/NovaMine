@@ -62,3 +62,7 @@ services:
         sync: false
       - key: BRAVE_SEARCH_RESULT_LIMIT
         value: 10
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: TAVILY_SEARCH_RESULT_LIMIT
+        value: 10

@@ -80,14 +80,14 @@ Demo accounts/data are for local testing only. Disable demo access before using 
 
 ### 5. Configure live public web discovery
 
-NovaMine's general-purpose public web discovery uses the Brave Search API.
+NovaMine's general-purpose public web discovery uses Tavily by default. Tavily currently offers 1,000 API credits per month on its free plan without requiring a credit card.
 
-1. Create a Brave Search API subscription at [Brave Search API](https://brave.com/search/api/).
+1. Create a free account at [Tavily](https://www.tavily.com/).
 2. Add your key to `.env`:
 
 ```dotenv
-BRAVE_SEARCH_API_KEY=your_brave_search_api_key
-BRAVE_SEARCH_RESULT_LIMIT=10
+TAVILY_API_KEY=your_tavily_api_key
+TAVILY_SEARCH_RESULT_LIMIT=10
 ```
 
 3. Clear cached configuration:
@@ -98,7 +98,7 @@ php artisan config:clear
 
 4. Start a search in NovaMine. Enter a job role; industry, location, experience, and skills are optional filters.
 
-Without `BRAVE_SEARCH_API_KEY`, the Brave adapter returns no live web results. GitHub discovery can still return technical profiles.
+Brave Search remains an optional alternate provider if you already have a key. GitHub discovery can still return technical profiles without either web-search key.
 
 ### 6. Start the app and queue worker
 
@@ -122,12 +122,14 @@ For production, configure a persistent queue backend and a separate worker proce
 
 ## Candidate discovery sources
 
-### Brave Web Search
+### Tavily Web Search
 
-- Searches public web results for professional profiles, portfolios, resumes, CVs, and biography pages across job families and industries.
+- Searches public web results for professional profiles, portfolios, resumes, CVs, and biography pages across job families and industries. The adapter uses Tavily's basic search depth to stay within its free monthly credits.
 - Stores the result title, public URL, source name, and search-result excerpt.
 - Adds a requested skill only when that term appears in the result title or excerpt.
 - Excludes selected professional-network and job-board domains from this adapter.
+
+Brave Search is also supported as an optional provider through `BRAVE_SEARCH_API_KEY`.
 
 ### GitHub Public API
 
@@ -151,7 +153,7 @@ Synthetic demo candidates are disabled by default. They are only returned when `
 
 ## What NovaMine collects today
 
-The Brave integration is a discovery-first implementation. Search-engine results may provide a profile title, URL, and excerpt, but frequently do not expose a complete profile. NovaMine does not invent missing names, email addresses, phone numbers, employers, locations, education, or years of experience.
+The web-search integrations are discovery-first. Search-engine results may provide a profile title, URL, and excerpt, but frequently do not expose a complete profile. NovaMine does not invent missing names, email addresses, phone numbers, employers, locations, education, or years of experience.
 
 If a search result does not identify a person clearly from its title, NovaMine skips it rather than inventing an identity. The source excerpt is retained on saved candidate records so recruiters can review the evidence.
 
@@ -184,7 +186,7 @@ Before deploying:
 1. Configure a fresh `APP_KEY` in Render (the blueprint uses a generated value).
 2. Configure the production database and `APP_URL`.
 3. Set `APP_DEBUG=false`.
-4. Add `BRAVE_SEARCH_API_KEY` and optionally `GITHUB_TOKEN` as private environment variables.
+4. Add `TAVILY_API_KEY` and optionally `GITHUB_TOKEN` as private environment variables. `BRAVE_SEARCH_API_KEY` can be used as an alternative.
 5. Keep candidate data and exports protected; use persistent storage where required.
 6. Review queue behaviour. The supplied Render blueprint currently uses `QUEUE_CONNECTION=sync`; that means queued work runs synchronously unless you configure a separate worker and persistent queue backend.
 7. Back up the database before applying migrations.

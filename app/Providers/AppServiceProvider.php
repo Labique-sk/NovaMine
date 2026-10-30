@@ -9,6 +9,7 @@ use App\Services\Sources\GenericSearchAdapter;
 use App\Services\Sources\PublicDatasetAdapter;
 use App\Services\Sources\SourceAdapterInterface;
 use App\Services\Sources\SourceAdapterRegistry;
+use App\Services\Sources\TavilySearchAdapter;
 use App\Services\Sources\UserProvidedUrlAdapter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -25,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
             PublicDatasetAdapter::class,
             GenericSearchAdapter::class,
             BraveWebSearchAdapter::class,
+            TavilySearchAdapter::class,
             UserProvidedUrlAdapter::class,
         ], SourceAdapterInterface::class);
 
