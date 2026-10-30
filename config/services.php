@@ -49,4 +49,9 @@ return [
         'token' => env('GITHUB_TOKEN'),
     ],
 
+    'brave_search' => [
+        'key' => env('BRAVE_SEARCH_API_KEY'),
+        'result_limit' => env('BRAVE_SEARCH_RESULT_LIMIT', 10),
+    ],
+
 ];

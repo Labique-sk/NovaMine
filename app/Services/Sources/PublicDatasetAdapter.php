@@ -11,6 +11,11 @@ class PublicDatasetAdapter implements SourceAdapterInterface
 
     public function collect(array $criteria): array
     {
+        // Synthetic records are for demos only and are never mixed into live sourcing by default.
+        if (! filter_var($criteria['include_demo'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+            return [];
+        }
+
         $role = (string) ($criteria['role'] ?? 'AI Engineer');
         $location = (string) ($criteria['location'] ?? 'Pune, India');
         $skills = $this->skills($criteria);

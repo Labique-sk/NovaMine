@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'portfolio_url',
     'source_url',
     'source_name',
+    'source_snippet',
     'candidate_type',
     'verification_status',
     'email_validation_status',
@@ -112,6 +113,8 @@ class Candidate extends Model
             'skills' => $this->relationLoaded('skills') ? $this->skills->pluck('name')->all() : [],
             'is_synthetic' => $this->is_synthetic,
             'source_name' => $this->source_name,
+            'source_url' => $this->source_url,
+            'source_snippet' => $this->source_snippet,
             'verification_status' => $this->verification_status,
         ];
     }

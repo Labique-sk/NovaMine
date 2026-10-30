@@ -15,15 +15,19 @@ class GenericSearchAdapter implements SourceAdapterInterface
 
     public function collect(array $criteria): array
     {
-        $location = (string) ($criteria['location'] ?? 'Pune');
-        $skills = $criteria['skills'] ?? ['Python'];
+        $roleAndIndustry = strtolower((string) ($criteria['role'] ?? '') . ' ' . (string) ($criteria['industry'] ?? ''));
+        if (! preg_match('/developer|engineer|software|programmer|devops|cloud|data|cyber|security|technical|it support|system administrator|frontend|backend|full.?stack|machine learning|\bai\b|\bqa\b tester/i', $roleAndIndustry)) {
+            return [];
+        }
+        $location = trim((string) ($criteria['location'] ?? ''));
+        $skills = $criteria['skills'] ?? [];
         if (is_string($skills)) {
             $skills = preg_split('/[,;]+/', $skills) ?: [];
         }
         $skill = trim((string) ($skills[0] ?? 'Python'));
         $city = trim(explode(',', $location)[0]);
 
-        $query = sprintf('location:%s language:%s type:user', $city, $skill);
+        $query = implode(' ', array_filter(['type:user', $city !== '' ? 'location:'.$city : null, $skill !== '' ? 'language:'.$skill : null]));
 
         try {
             $headers = [
@@ -60,18 +64,31 @@ class GenericSearchAdapter implements SourceAdapterInterface
                 $user = $profile->successful() ? $profile->json() : [];
                 $name = $user['name'] ?? $login;
                 $email = $user['email'] ?? null;
+                $repositories = Http::timeout(8)->withHeaders($headers)->get('https://api.github.com/users/'.$login.'/repos', [
+                    'per_page' => 50,
+                    'sort' => 'updated',
+                ]);
+                $observedSkills = [];
+                if ($repositories->successful()) {
+                    foreach ((array) $repositories->json() as $repository) {
+                        if (! empty($repository['language'])) {
+                            $observedSkills[] = (string) $repository['language'];
+                        }
+                    }
+                }
+                $observedSkills = array_values(array_unique($observedSkills));
                 $blog = $user['blog'] ?? null;
                 $htmlUrl = $user['html_url'] ?? ($item['html_url'] ?? null);
 
                 $records[] = [
                     'name' => $name,
-                    'designation' => (string) ($criteria['role'] ?? 'Software Engineer'),
+                    'designation' => 'Public GitHub developer profile (role not confirmed)',
                     'company' => $user['company'] ?? null,
                     'experience' => null,
-                    'industry' => (string) ($criteria['industry'] ?? 'Technology'),
-                    'skills' => array_values(array_filter(array_map('trim', (array) $skills))),
+                    'industry' => 'Technology',
+                    'skills' => $observedSkills,
                     'education' => [],
-                    'location' => $user['location'] ?? $location,
+                    'location' => $user['location'] ?? null,
                     'email' => $email,
                     'phone' => null,
                     'profile_url' => $htmlUrl,

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Services\Intelligence\CandidateIntelligenceProviderInterface;
 use App\Services\Intelligence\RuleBasedIntelligenceProvider;
+use App\Services\Sources\BraveWebSearchAdapter;
 use App\Services\Sources\GenericSearchAdapter;
 use App\Services\Sources\PublicDatasetAdapter;
 use App\Services\Sources\SourceAdapterInterface;
@@ -23,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->tag([
             PublicDatasetAdapter::class,
             GenericSearchAdapter::class,
+            BraveWebSearchAdapter::class,
             UserProvidedUrlAdapter::class,
         ], SourceAdapterInterface::class);
 

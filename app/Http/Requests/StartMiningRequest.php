@@ -24,6 +24,7 @@ class StartMiningRequest extends FormRequest
             'min_score' => ['nullable', 'integer', 'min:0', 'max:100'],
             'profile_url' => ['nullable', 'url'],
             'sources' => ['nullable', 'array'],
+            'include_demo' => ['nullable', 'boolean'],
         ];
     }
 }

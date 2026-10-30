@@ -263,6 +263,7 @@
           <div class="infobox"><small>Phone</small><b>${escapeHtml(c.phone || "Not public")}</b></div>
           <div class="infobox"><small>Source</small><b>${escapeHtml(c.source_name || "—")}</b></div>
         </div>
+        ${c.source_snippet ? `<div class="infobox" style="margin-top:12px"><small>Public search excerpt · review before relying on it</small><p style="margin:6px 0 0;line-height:1.5">${escapeHtml(c.source_snippet)}</p></div>` : ""}
         <div class="sectionhead"><h2>Skills</h2></div>
         <div class="taglist">${(c.skills || []).map((s) => `<span class="tag">${escapeHtml(s)}</span>`).join("") || `<span class="muted">None listed</span>`}</div>
         <p class="muted" style="font-size:11px;margin-top:12px">${escapeHtml(breakdown.explanation || "")}</p>
@@ -429,7 +430,7 @@
         location: $("location").value,
         experience: $("experience").value,
         skills: $("skills").value,
-        industry: $("industry") ? $("industry").value : "Technology",
+        industry: $("industry") ? $("industry").value.trim() : "",
         candidate_type: document.querySelector("#types .chip.on")?.textContent || "Professional",
         min_score: +$("minScore").value,
       };

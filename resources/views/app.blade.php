@@ -131,21 +131,21 @@
 </section>
 
 <section id="mining" class="page hidden">
-  <div class="hero"><div><div class="eyebrow">Mining studio</div><h1>Build a <span class="gradient">high-signal search.</span></h1><p>Use structured filters to generate a realistic candidate dataset. Start a backend mining job. Permitted public adapters collect, validate, deduplicate and score records.</p></div></div>
+  <div class="hero"><div><div class="eyebrow">Mining studio</div><h1>Build a <span class="gradient">high-signal search.</span></h1><p>Search public professional profiles across industries. NovaMine collects source-backed leads, normalizes records, checks duplicates and calculates preliminary match scores.</p></div></div>
   <div class="mining">
     <aside class="config glass">
       <h2>Search configuration</h2><p>Fine-tune the profile you want to discover.</p>
       <div class="field"><label>Job role</label><input class="input" id="role" value="AI Engineer"></div>
-      <div class="field"><label>Location</label><select class="select" id="location"><option>Pune, India</option><option>Mumbai, India</option><option>Bengaluru, India</option><option>Hyderabad, India</option><option>Delhi NCR, India</option></select></div>
-      <div class="field"><label>Experience</label><select class="select" id="experience"><option>0–2 years</option><option>2–5 years</option><option>5–8 years</option><option>8+ years</option></select></div>
+      <div class="field"><label>Location</label><input class="input" id="location" placeholder="Any location (e.g. Pune, India)"></div>
+      <div class="field"><label>Experience</label><select class="select" id="experience"><option value="">Any experience</option><option>0–2 years</option><option>2–5 years</option><option>5–8 years</option><option>8+ years</option></select></div>
       <div class="field"><label>Candidate type</label><div class="checkrow" id="types"><button class="chip on" type="button">Professional</button><button class="chip" type="button">Student</button><button class="chip" type="button">Intern</button></div></div>
-      <div class="field"><label>Industry</label><input class="input" id="industry" value="Technology"></div>
-      <div class="field"><label>Skills</label><input class="input" id="skills" value="Python, SQL, Machine Learning"></div>
+      <div class="field"><label>Industry</label><input class="input" id="industry" placeholder="Any industry (e.g. Finance, Healthcare, Retail)"></div>
+      <div class="field"><label>Skills</label><input class="input" id="skills" placeholder="Optional skills, separated by commas"></div>
       <div class="field"><label>Minimum match score</label><input id="minScore" type="range" min="60" max="98" value="78" style="width:100%"><div style="display:flex;justify-content:space-between;color:var(--muted);font-size:10px"><span>60%</span><b id="scoreLabel">78%</b><span>98%</span></div></div>
       <div class="mining-cta">
         <button class="primary" id="mine" type="button" aria-label="Start AI candidate mining">
           <span class="mine-icon"><svg class="icon" style="width:16px;height:16px"><use href="#i-spark"/></svg></span>
-          <span>Start AI Mining</span>
+          <span>Search public profiles</span>
           <span class="mine-arrow">→</span>
         </button>
         <div class="mining-cta-caption"><span class="live-dot"></span><span>Ready to scan candidate signals</span></div>

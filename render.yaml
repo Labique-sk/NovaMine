@@ -21,7 +21,7 @@ services:
       - key: APP_DEBUG
         value: false
       - key: APP_KEY
-        value: base64:uZuMZv7PeUt+0SDhiHE9P6Uk9QOHHydusfAIk2u1IU4=
+        generateValue: true
       - key: APP_URL
         value: https://novamine-web.onrender.com
       - key: DB_CONNECTION
@@ -58,3 +58,7 @@ services:
         value: stderr
       - key: LOG_LEVEL
         value: warning
+      - key: BRAVE_SEARCH_API_KEY
+        sync: false
+      - key: BRAVE_SEARCH_RESULT_LIMIT
+        value: 10

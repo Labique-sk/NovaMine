@@ -37,6 +37,7 @@ class CandidateNormalizer
             'portfolio_url' => $this->normalizeUrl($record['portfolio_url'] ?? null),
             'source_url' => $this->normalizeUrl($record['source_url'] ?? null),
             'source_name' => $this->nullIfEmpty($record['source_name'] ?? null),
+            'source_snippet' => $this->nullIfEmpty($record['source_snippet'] ?? null),
             'candidate_type' => $this->nullIfEmpty($record['candidate_type'] ?? null),
             'is_synthetic' => (bool) ($record['is_synthetic'] ?? false),
             'skills' => array_values(array_unique(array_filter(array_map(
