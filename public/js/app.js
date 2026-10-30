@@ -19,7 +19,9 @@
   let sortKey = "score";
   let sortDir = "desc";
   let page = 1;
-  let showAllCandidates = false;
+  // Start with the saved candidate list visible. Mining form values are
+  // collection criteria, not active result filters until “Filters” is clicked.
+  let showAllCandidates = true;
   let charts = {};
   let miningJobId = null;
   let miningPoll = null;
@@ -460,6 +462,10 @@
           $("mineOverlay").classList.remove("open");
           if (job.status === "completed") {
             toast(`Mining complete · ${job.processed} candidate records ready`);
+            // Search configuration describes what to collect; it should not hide
+            // the records just collected (many public profiles have unconfirmed roles).
+            showAllCandidates = true;
+            page = 1;
             nav("mining");
           } else if (job.status === "failed") {
             toast(job.error_message || "Mining source temporarily unavailable.");
@@ -643,12 +649,8 @@
     c.classList.add("on");
   });
   
-  // Add event listeners for mining configuration filters to refresh candidate list
-  if ($("role")) $("role").addEventListener("input", () => { showAllCandidates = false; page = 1; loadCandidates(); });
-  if ($("location")) $("location").addEventListener("change", () => { showAllCandidates = false; page = 1; loadCandidates(); });
-  if ($("experience")) $("experience").addEventListener("change", () => { showAllCandidates = false; page = 1; loadCandidates(); });
-  if ($("industry")) $("industry").addEventListener("input", () => { showAllCandidates = false; page = 1; loadCandidates(); });
-  if ($("skills")) $("skills").addEventListener("input", () => { showAllCandidates = false; page = 1; loadCandidates(); });
+  // Search configuration fields are applied when a new mining job starts.
+  // Use the explicit Filters button to apply them to the displayed candidate list.
   document.querySelectorAll("[data-export]").forEach((b) => b.onclick = () => createExport(b.dataset.export));
   $("createShortlist").onclick = async () => {
     const name = $("shortlistName").value.trim();
