@@ -131,7 +131,7 @@ class TavilySearchAdapter implements SourceAdapterInterface
         $candidate = preg_replace('/\b(profile|portfolio|resume|curriculum vitae|cv|official website)\b/i', '', $candidate) ?? $candidate;
         $candidate = trim($candidate, " \t\n\r\0\x0B|–—-");
 
-        if (preg_match('/\b(jobs?|careers?|vacancies|hiring|job description|apply now)\b/i', $candidate)) {
+        if (preg_match('/\b(jobs?|careers?|vacancies|hiring|job description|apply now|resume|curriculum vitae|profile|portfolio|biography|engineer|developer|scientist|analyst|architect|designer|consultant|manager|director|intern|student|software|machine learning|artificial intelligence|data science)\b/i', $candidate)) {
             return '';
         }
 
