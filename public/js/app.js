@@ -608,7 +608,8 @@
     finally { setLoading($("googleExport"), false); }
   };
 
-  $("googleBtn").onclick = $("appleBtn").onclick = () => toast("Use email and password, or the seeded demo account.");
+  $("googleBtn").onclick = () => { window.location.href = "/auth/google/redirect"; };
+  $("appleBtn").onclick = () => toast("Apple sign-in is not configured yet.");
   $("refresh").onclick = () => nav(currentPage);
   $("theme").onclick = () => {
     const on = document.body.classList.toggle("reduced-fx");
@@ -760,6 +761,15 @@
     if (reducedMotion) Chart.defaults.animation = false;
     const params = new URLSearchParams(location.search);
     if (params.get("token") && params.get("email")) $("resetOverlay").classList.add("open");
+    const googleAuthMessages = {
+      google_success: "Signed in with Google",
+      google_not_configured: "Google sign-in is not configured. Add Google OAuth credentials in Render.",
+      google_cancelled: "Google sign-in was cancelled.",
+      google_email_unverified: "Google did not provide a verified email address.",
+      google_account_conflict: "This Google account conflicts with an existing linked account. Sign in with email first.",
+      google_failed: "Google sign-in failed. Check the OAuth client and callback URL, then try again.",
+    };
+    if (googleAuthMessages[params.get("auth")]) toast(googleAuthMessages[params.get("auth")]);
     if (params.get("google") === "connected") toast("Google Sheets connected");
     if (params.get("google") === "error") toast("Google Sheets authorization required.");
     try {

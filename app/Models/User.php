@@ -17,7 +17,7 @@ use Illuminate\Notifications\Notifiable;
     'preferences',
     'google_spreadsheet_id',
 ])]
-#[Hidden(['password', 'remember_token', 'google_access_token', 'google_refresh_token'])]
+#[Hidden(['password', 'remember_token', 'google_access_token', 'google_refresh_token', 'google_id'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
