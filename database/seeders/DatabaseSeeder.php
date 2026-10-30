@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
     {
         // Create demo user for testing only if it doesn't exist
         if (!User::where('email', 'demo@novamine.ai')->exists()) {
-            User::factory()->create([
+            User::create([
                 'name' => 'Demo User',
                 'email' => 'demo@novamine.ai',
                 'password' => 'demo1234', // Will be hashed by the model
