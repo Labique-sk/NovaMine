@@ -22,6 +22,10 @@ class CandidateController extends Controller
         $user = $request->user();
         $query = Candidate::query()->ownedBy($user)->with('skills');
 
+        if ($request->filled('mining_job_id')) {
+            $query->where('mining_job_id', $request->integer('mining_job_id'));
+        }
+
         if ($q = $request->string('q')->toString()) {
             $query->where(function (Builder $inner) use ($q) {
                 $inner->where('name', 'like', "%{$q}%")

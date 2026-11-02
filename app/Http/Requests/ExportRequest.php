@@ -16,6 +16,7 @@ class ExportRequest extends FormRequest
         return [
             'format' => ['required', 'in:csv,xlsx,json'],
             'shortlist_id' => ['nullable', 'integer'],
+            'mining_job_id' => ['nullable', 'integer'],
             'q' => ['nullable', 'string'],
             'min_score' => ['nullable', 'integer'],
             'ids' => ['nullable', 'array'],

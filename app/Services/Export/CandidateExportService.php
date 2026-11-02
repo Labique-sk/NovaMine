@@ -74,6 +74,10 @@ class CandidateExportService
             $query->whereHas('shortlists', fn (Builder $q) => $q->where('shortlists.id', $shortlistId)->where('shortlists.user_id', $user->id));
         }
 
+        if (! empty($filters['mining_job_id'])) {
+            $query->where('mining_job_id', (int) $filters['mining_job_id']);
+        }
+
         $this->applyFilters($query, $filters);
 
         $out = [];
