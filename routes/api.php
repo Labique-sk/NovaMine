@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CandidateController;
@@ -22,7 +23,14 @@ Route::prefix('auth')->group(function () {
     Route::get('me', [AuthController::class, 'me']);
 });
 
-Route::middleware('auth')->group(function () {
+Route::prefix('admin')->middleware(['auth', 'account.active'])->group(function () {
+    Route::post('unlock', [AdminController::class, 'unlock'])->middleware('throttle:5,1');
+    Route::post('lock', [AdminController::class, 'lock']);
+    Route::get('users', [AdminController::class, 'index']);
+    Route::put('users/{user}/status', [AdminController::class, 'setStatus']);
+});
+
+Route::middleware(['auth', 'account.active'])->group(function () {
     Route::get('dashboard', DashboardController::class);
     Route::get('analytics', AnalyticsController::class);
     Route::get('settings', [SettingsController::class, 'show']);

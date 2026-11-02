@@ -43,6 +43,12 @@ class AuthController extends Controller
             ]);
         }
 
+        if (! $request->user()->is_active) {
+            Auth::logout();
+
+            return response()->json(['message' => 'This account has been deactivated. Contact NovaMine support for help.'], 403);
+        }
+
         $request->session()->regenerate();
         $user = $request->user();
 
@@ -67,7 +73,7 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        return response()->json(['user' => $user ? $this->payload($user) : null]);
+        return response()->json(['user' => $user && $user->is_active ? $this->payload($user) : null]);
     }
 
     public function forgotPassword(Request $request): JsonResponse
@@ -109,6 +115,7 @@ class AuthController extends Controller
             'initials' => $user->initials(),
             'google_connected' => $user->googleConnected(),
             'preferences' => $user->preferences ?? [],
+            'admin_allowed' => filled(config('services.admin.email')) && strtolower($user->email) === strtolower((string) config('services.admin.email')),
         ];
     }
 }

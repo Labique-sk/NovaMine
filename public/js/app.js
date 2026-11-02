@@ -230,6 +230,7 @@
     if ($("profileNameInput")) $("profileNameInput").value = name;
     if ($("profileEmailInput")) $("profileEmailInput").value = user?.email || "";
     if ($("profileResetEmail")) $("profileResetEmail").textContent = user?.email || "your account email";
+    $("adminAccessCard")?.classList.toggle("hidden", !user?.admin_allowed);
     const secure = document.querySelector(".secure");
     if (secure) secure.innerHTML = "<b>✦ Platform secure</b>NovaMine workspace · live account";
     goApp("overview");
@@ -497,6 +498,27 @@
     finally { if (button) button.disabled = false; }
   }
 
+  function renderAdminDashboard(data) {
+    const summary = data.summary || {};
+    $("adminTotalUsers").textContent = summary.users ?? 0;
+    $("adminActiveUsers").textContent = summary.active_users ?? 0;
+    $("adminDeactivatedUsers").textContent = summary.deactivated_users ?? 0;
+    $("adminMiningRuns").textContent = summary.mining_runs ?? 0;
+    $("adminCandidateTotal").textContent = summary.candidates_mined ?? 0;
+    const rows = data.users || [];
+    $("adminUserRows").innerHTML = rows.length ? rows.map((user) => {
+      const activeSince = user.active_since ? new Date(user.active_since).toLocaleDateString() : "—";
+      return `<tr><td><strong>${esc(user.name)}</strong><br><span class="sub">${esc(user.email)}</span></td><td>${user.mining_runs}</td><td>${user.candidates_mined}</td><td>${activeSince}</td><td><span class="admin-status ${user.active ? "is-active" : "is-deactivated"}">${user.active ? "Active" : "Deactivated"}</span></td><td><button class="btn ${user.active ? "outline" : ""} admin-status-toggle" data-user-id="${user.id}" data-active="${user.active ? "false" : "true"}" type="button">${user.active ? "Deactivate" : "Reactivate"}</button></td></tr>`;
+    }).join("") : '<tr><td colspan="6">No users found.</td></tr>';
+  }
+
+  async function loadAdminDashboard() {
+    const data = await api("/api/admin/users");
+    renderAdminDashboard(data);
+    $("adminUnlockForm")?.classList.add("hidden");
+    $("adminDashboard")?.classList.remove("hidden");
+  }
+
   async function login(event) {
     event.preventDefault();
     if (!validateEmail($("loginEmail"), $("loginEmailErr")) || !validatePassword($("loginPassword"), $("loginPassErr"))) return;
@@ -549,6 +571,40 @@
       requestPasswordReset($("forgotEmail").value, $("forgotPasswordForm").querySelector('button[type="submit"]'));
     });
     $("profilePasswordReset")?.addEventListener("click", (event) => requestPasswordReset($("profileEmailInput")?.value, event.currentTarget));
+    $("adminUnlockForm")?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const error = $("adminPasswordError");
+      error.textContent = "";
+      const button = $("adminUnlockForm").querySelector('button[type="submit"]');
+      button.disabled = true;
+      try {
+        const data = await api("/api/admin/unlock", { method: "POST", body: { password: $("adminPassword").value } });
+        $("adminPassword").value = "";
+        renderAdminDashboard(data);
+        $("adminUnlockForm").classList.add("hidden");
+        $("adminDashboard").classList.remove("hidden");
+      } catch (requestError) {
+        error.textContent = requestError.message;
+      } finally { button.disabled = false; }
+    });
+    $("adminLock")?.addEventListener("click", async () => {
+      try { await api("/api/admin/lock", { method: "POST" }); }
+      finally {
+        $("adminDashboard")?.classList.add("hidden");
+        $("adminUnlockForm")?.classList.remove("hidden");
+        if ($("adminUserRows")) $("adminUserRows").innerHTML = '<tr><td colspan="6">Unlock to load users.</td></tr>';
+      }
+    });
+    $("adminUserRows")?.addEventListener("click", async (event) => {
+      const button = event.target.closest(".admin-status-toggle");
+      if (!button) return;
+      button.disabled = true;
+      try {
+        const data = await api(`/api/admin/users/${button.dataset.userId}/status`, { method: "PUT", body: { active: button.dataset.active === "true" } });
+        renderAdminDashboard(data);
+        toast("Account status updated.");
+      } catch (requestError) { toast(requestError.message); button.disabled = false; }
+    });
     $("resetPasswordForm")?.addEventListener("submit", async (event) => {
       event.preventDefault();
       const validEmail = validateEmail($("resetEmail"), $("resetEmailErr"));
@@ -595,7 +651,7 @@
     connectInteractions();
     const params = new URLSearchParams(location.search);
     const authMessages = { google_success: "Signed in with Google.", google_not_configured: "Google sign-in needs GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Render.", google_cancelled: "Google sign-in was cancelled.", google_email_unverified: "Google did not return a verified email address.", google_account_conflict: "Sign in with the existing email account before linking Google.", google_failed: "Google sign-in failed. Check the OAuth configuration and callback URL." };
-    Object.assign(authMessages, { linkedin_success: "Signed in with LinkedIn.", linkedin_not_configured: "LinkedIn sign-in needs LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET in Render.", linkedin_cancelled: "LinkedIn sign-in was cancelled.", linkedin_email_unverified: "LinkedIn did not provide a verified email address.", linkedin_account_conflict: "Sign in with the existing account before linking LinkedIn.", linkedin_failed: "LinkedIn sign-in failed. Check the OAuth configuration and callback URL." });
+    Object.assign(authMessages, { linkedin_success: "Signed in with LinkedIn.", linkedin_not_configured: "LinkedIn sign-in needs LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET in Render.", linkedin_cancelled: "LinkedIn sign-in was cancelled.", linkedin_email_unverified: "LinkedIn did not provide a verified email address.", linkedin_account_conflict: "Sign in with the existing account before linking LinkedIn.", linkedin_failed: "LinkedIn sign-in failed. Check the OAuth configuration and callback URL.", account_deactivated: "This account has been deactivated. Contact NovaMine support for help." });
     if (authMessages[params.get("auth")]) toast(authMessages[params.get("auth")]);
     if (location.pathname.startsWith("/password/reset/") && $("resetToken")?.value) { showPublic("resetPassword"); return; }
     try {

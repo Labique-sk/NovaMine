@@ -72,3 +72,7 @@ services:
         sync: false
       - key: LINKEDIN_REDIRECT_URI
         value: https://novamine-web.onrender.com/auth/linkedin/callback
+      - key: ADMIN_EMAIL
+        value: labiqueshaikh470@gmail.com
+      - key: ADMIN_DASHBOARD_PASSWORD
+        sync: false

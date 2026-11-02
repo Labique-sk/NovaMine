@@ -633,3 +633,25 @@ tbody td{line-height:1.5}
   #result #candSearch{height:42px}
 }
 @media(prefers-reduced-motion:reduce){#result .table-card>.card-head,#result #candSearch{transition:none !important}}
+
+/* Admin dashboard */
+.admin-access-card{margin-top:20px;padding:20px;border-color:rgba(124,92,255,.24)}
+.admin-access-card h2,.admin-dashboard-heading h3{margin:5px 0;font-size:17px}
+.admin-access-card p{margin:5px 0;color:var(--muted,#788198);font-size:12px}
+.admin-unlock-form{display:grid;grid-template-columns:minmax(180px,1fr) auto;align-items:end;gap:12px;margin-top:16px}
+.admin-unlock-form .field{margin:0}
+.admin-unlock-form .error{grid-column:1/-1}
+.admin-dashboard-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:20px 0 14px}
+.admin-metrics{display:grid;grid-template-columns:repeat(5,minmax(100px,1fr));gap:10px;margin:12px 0 18px}
+.admin-metric{padding:14px;display:flex;flex-direction:column;gap:6px}
+.admin-metric b{font-size:23px;color:#7145cf}
+.admin-metric span{font-size:11px;color:var(--muted,#788198)}
+.admin-table-wrap{max-width:100%;overflow:auto}
+.admin-table-wrap table{min-width:760px}
+.admin-status{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:10px;font-weight:750}
+.admin-status.is-active{color:#16764d;background:#e7f8ef}
+.admin-status.is-deactivated{color:#a33c4b;background:#fff0f1}
+.admin-status-toggle{padding:7px 10px;font-size:10px}
+html.dark .admin-status.is-active{color:#8de1b5;background:#173d30}
+html.dark .admin-status.is-deactivated{color:#ff9ca6;background:#47242c}
+@media(max-width:760px){.admin-unlock-form{grid-template-columns:1fr}.admin-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-dashboard-heading{align-items:flex-start;flex-direction:column}}

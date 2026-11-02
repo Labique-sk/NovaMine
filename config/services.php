@@ -48,6 +48,11 @@ return [
         'redirect' => env('LINKEDIN_REDIRECT_URI'),
     ],
 
+    'admin' => [
+        'email' => env('ADMIN_EMAIL'),
+        'password' => env('ADMIN_DASHBOARD_PASSWORD'),
+    ],
+
     'email_validation' => [
         'key' => env('EMAIL_VALIDATION_API_KEY'),
     ],

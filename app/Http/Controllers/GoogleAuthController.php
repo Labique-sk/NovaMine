@@ -104,6 +104,10 @@ class GoogleAuthController extends Controller
                 ])->save();
             }
 
+            if (! $user->is_active) {
+                return redirect('/?auth=account_deactivated');
+            }
+
             Auth::login($user);
             $request->session()->regenerate();
 
