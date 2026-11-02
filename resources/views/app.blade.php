@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#050506">
+<meta name="theme-color" content="#090711">
 <meta name="color-scheme" content="dark">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
@@ -44,14 +44,9 @@
         <li><span class="check"><svg class="icon"><use href="#i-check"/></svg></span>Automatic verification and duplicate detection</li>
         <li><span class="check"><svg class="icon"><use href="#i-check"/></svg></span>One-click export to CSV, JSON or Excel</li>
       </ul>
-      <div class="authstats">
-        <div class="authstat"><strong>2,480+</strong><span>Candidates mined</span></div>
-        <div class="authstat"><strong id="aValidation">0%</strong><span>Validation rate</span></div>
-        <div class="authstat"><strong id="aProcessing">—</strong><span>Avg. processing</span></div>
-      </div>
     </div>
     <div class="authbox glass">
-      <div class="authbox-head"><h2>Welcome back</h2><p>Sign in to your demo workspace.</p></div>
+      <div class="authbox-head"><h2>Welcome back</h2><p>Sign in to your NovaMine workspace.</p></div>
       <form id="loginForm" novalidate>
         <div class="field">
           <label for="email">Email</label>
@@ -77,10 +72,9 @@
         <button class="primary" id="login" type="submit">Enter workspace <span class="arrow">→</span></button>
       </form>
       <button class="demofill" id="demoFill" type="button"><span class="live-dot"></span>Use demo account — demo@novamine.ai</button>
-      <div class="divider"><span>or continue with</span></div>
+      <div class="divider"><span>or sign in with</span></div>
       <div class="socialrow">
         <button class="ghost social" id="googleBtn" type="button"><svg class="icon"><use href="#i-google"/></svg>Google</button>
-        <button class="ghost social" id="appleBtn" type="button"><svg class="icon"><use href="#i-apple"/></svg>Apple</button>
       </div>
       
       <div class="auth-toggle">Need an account? <button type="button" id="showRegister">Create one</button></div>
@@ -98,13 +92,8 @@
 </div>
 
 <header class="topbar">
-  <div style="display:flex;align-items:center">
-    <a class="brand" href="#"><span class="logo"></span><span>NovaMine</span></a>
-    <nav class="nav" id="nav">
-      <span class="navthumb" aria-hidden="true"></span>
-      <button class="active" data-page="dashboard">Overview</button><button data-page="mining">Mine</button><button data-page="analytics">Analytics</button><button data-page="saved">Shortlists</button><button data-page="exports">Exports</button>
-    </nav>
-  </div>
+  <a class="brand" href="#"><span class="logo"></span><span>NovaMine</span></a>
+  <div class="topbar-context">Candidate sourcing workspace</div>
   <div class="actions">
     <button class="iconbtn" id="refresh" title="Refresh" aria-label="Refresh workspace"><svg class="icon"><use href="#i-refresh"/></svg></button>
     <button class="iconbtn" id="theme" title="Reduce visual effects" aria-label="Toggle visual effects"><svg class="icon"><use href="#i-glow"/></svg></button>
@@ -112,14 +101,28 @@
   </div>
 </header>
 
+<div class="workspace-layout">
+<aside class="sidebar glass" aria-label="Workspace navigation">
+  <div class="sidebar-label">Workspace</div>
+  <nav class="nav" id="nav" aria-label="Main navigation">
+    <span class="navthumb" aria-hidden="true"></span>
+    <button class="active" data-page="dashboard"><svg class="icon"><use href="#i-home"/></svg><span>Overview</span></button>
+    <button data-page="mining"><svg class="icon"><use href="#i-spark"/></svg><span>Mine candidates</span></button>
+    <button data-page="analytics"><svg class="icon"><use href="#i-chart"/></svg><span>Analytics</span></button>
+    <button data-page="saved"><svg class="icon"><use href="#i-heart"/></svg><span>Shortlists</span></button>
+    <button data-page="exports"><svg class="icon"><use href="#i-download"/></svg><span>Exports</span></button>
+    <button data-page="settings"><svg class="icon"><use href="#i-glow"/></svg><span>Settings</span></button>
+  </nav>
+  <button class="sidebar-cta primary" type="button" data-page="mining"><svg class="icon"><use href="#i-spark"/></svg>Start a search</button>
+</aside>
 <main class="shell">
 <section id="dashboard" class="page">
-  <div class="hero"><div><div class="eyebrow">AI candidate intelligence · live workspace</div><h1>Find signal in your <span class="gradient">candidate universe.</span></h1><p>Configure a search, run a mining job, validate records, score candidates and export a clean dataset — all from one fast workspace.</p></div><button class="primary" type="button" data-page="mining">Start new mining <svg class="icon" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"><use href="#i-spark"/></svg></button></div>
+  <div class="hero"><div><div class="eyebrow">Candidate intelligence workspace</div><h1>Find signal in your <span class="gradient">candidate universe.</span></h1><p>Configure a search, run a mining job, validate records, score candidates and export a clean dataset — all from one fast workspace.</p></div><button class="primary" type="button" data-page="mining">Start new mining <svg class="icon" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"><use href="#i-spark"/></svg></button></div>
   <div class="stats">
-    <div class="stat glass"><small>Total candidates</small><strong id="sCandidates">—</strong><span class="trend">▲ 12.4% this month</span></div>
-    <div class="stat glass"><small>Verified profiles</small><strong id="sVerified">—</strong><span class="trend">▲ 8.7% validation rate</span></div>
-    <div class="stat glass"><small>Mining jobs</small><strong id="sJobs">—</strong><span class="trend">▲ 5 completed today</span></div>
-    <div class="stat glass"><small>Avg. match score</small><strong id="sScore">—</strong><span class="trend">▲ 2.1% relevance</span></div>
+    <div class="stat glass"><small>Total candidates</small><strong id="sCandidates">—</strong><span class="trend">In your workspace</span></div>
+    <div class="stat glass"><small>Verified profiles</small><strong id="sVerified">—</strong><span class="trend">Marked verified</span></div>
+    <div class="stat glass"><small>Mining jobs</small><strong id="sJobs">—</strong><span class="trend">Completed and active</span></div>
+    <div class="stat glass"><small>Avg. match score</small><strong id="sScore">—</strong><span class="trend">Across saved profiles</span></div>
   </div>
   <div class="charts">
     <div class="card glass"><div class="cardhead"><div><div class="cardtitle">Candidate acquisition</div><div class="cardsub">Records discovered across the last 14 days</div></div><span class="pill verified">LIVE</span></div><div class="chartbox"><canvas id="lineChart"></canvas></div></div>
@@ -160,7 +163,7 @@
 
 <section id="analytics" class="page hidden">
   <div class="hero"><div><div class="eyebrow">Analytics</div><h1>Understand your <span class="gradient">pipeline.</span></h1><p>Measure mining volume, validation quality, source mix and candidate relevance.</p></div></div>
-  <div class="stats"><div class="stat glass"><small>Validation rate</small><strong id="aValidation">0%</strong><span class="trend">▲ 3.2%</span></div><div class="stat glass"><small>Duplicate rate</small><strong id="aDuplicates">0%</strong><span class="trend">▼ 1.4%</span></div><div class="stat glass"><small>Avg. processing</small><strong id="aProcessing">—</strong><span class="trend">▼ 12%</span></div><div class="stat glass"><small>Exports</small><strong id="aExports">0</strong><span class="trend">▲ 18 this week</span></div></div>
+  <div class="stats"><div class="stat glass"><small>Validation rate</small><strong id="aValidation">0%</strong><span class="trend">Based on stored profiles</span></div><div class="stat glass"><small>Duplicate rate</small><strong id="aDuplicates">0%</strong><span class="trend">Detected in your workspace</span></div><div class="stat glass"><small>Avg. processing</small><strong id="aProcessing">—</strong><span class="trend">For completed mining jobs</span></div><div class="stat glass"><small>Exports</small><strong id="aExports">0</strong><span class="trend">Generated in your workspace</span></div></div>
   <div class="charts"><div class="card glass"><div class="cardtitle">Validation quality</div><div class="chartbox"><canvas id="validationChart"></canvas></div></div><div class="card glass"><div class="cardtitle">Location distribution</div><div class="chartbox"><canvas id="locationChart"></canvas></div></div><div class="card glass"><div class="cardtitle">Mining volume</div><div class="chartbox"><canvas id="volumeChart"></canvas></div></div></div>
 </section>
 
@@ -238,6 +241,7 @@
 </div>
 
 </main>
+</div>
 
 <footer class="sitefooter">
   <div class="footerinner glass">

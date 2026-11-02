@@ -93,10 +93,21 @@
     if (!container) return;
     const active = container.querySelector("[data-page].active");
     const thumb = container.querySelector(".navthumb");
-    if (!active || !thumb) return;
+    if (!thumb) return;
+    if (!active) {
+      thumb.style.width = "0px";
+      thumb.style.height = "0px";
+      return;
+    }
     const cr = container.getBoundingClientRect(), ar = active.getBoundingClientRect();
     thumb.style.width = ar.width + "px";
-    thumb.style.transform = "translateX(" + (ar.left - cr.left) + "px)";
+    if (containerId === "nav") {
+      thumb.style.height = ar.height + "px";
+      thumb.style.transform = "translate(" + (ar.left - cr.left) + "px," + (ar.top - cr.top) + "px)";
+    } else {
+      thumb.style.height = "";
+      thumb.style.transform = "translateX(" + (ar.left - cr.left) + "px)";
+    }
   }
   function updateThumbs() { updateThumb("nav"); updateThumb("bottomnav"); }
 
@@ -153,17 +164,17 @@
     document.querySelector("#sCandidates").nextElementSibling.textContent = data.totals.candidate_trend;
     upsertChart("lineChart", "line", {
       labels: data.acquisition.labels,
-      datasets: [{ data: data.acquisition.data, borderColor: "#68aaff", backgroundColor: "rgba(104,170,255,.10)", fill: true, tension: 0.38, pointRadius: 0 }],
+      datasets: [{ data: data.acquisition.data, borderColor: "#a78bfa", backgroundColor: "rgba(167,139,250,.12)", fill: true, tension: 0.38, pointRadius: 0 }],
     });
     const sourceLabels = Object.keys(data.sources || {});
     upsertChart("sourceChart", "doughnut", {
       labels: sourceLabels.length ? sourceLabels : ["No sources yet"],
-      datasets: [{ data: sourceLabels.length ? Object.values(data.sources) : [1], backgroundColor: ["#0a84ff", "#bf5af2", "#30d158", "#ffd60a"], borderWidth: 0 }],
+      datasets: [{ data: sourceLabels.length ? Object.values(data.sources) : [1], backgroundColor: ["#8b5cf6", "#c084fc", "#30d158", "#ffd60a"], borderWidth: 0 }],
     }, { responsive: true, maintainAspectRatio: false, cutout: "72%", plugins: { legend: { position: "bottom", labels: { color: "#a1a1a6", font: { size: 9 }, boxWidth: 8 } } } });
     const skillLabels = Object.keys(data.skills || {});
     upsertChart("skillChart", "bar", {
       labels: skillLabels.length ? skillLabels : ["None"],
-      datasets: [{ data: skillLabels.length ? Object.values(data.skills) : [0], backgroundColor: "rgba(10,132,255,.55)", borderRadius: 6 }],
+      datasets: [{ data: skillLabels.length ? Object.values(data.skills) : [0], backgroundColor: "rgba(139,92,246,.62)", borderRadius: 6 }],
     }, { ...chartDefaults(), indexAxis: "y" });
     renderRows($("recentBody"), data.recent_candidates || [], 6);
   }
@@ -314,9 +325,9 @@
     const locLabels = Object.keys(data.locations || {});
     upsertChart("locationChart", "doughnut", {
       labels: locLabels.length ? locLabels : ["None"],
-      datasets: [{ data: locLabels.length ? Object.values(data.locations) : [1], backgroundColor: ["#0a84ff", "#bf5af2", "#30d158", "#ffd60a"], borderWidth: 0 }],
+      datasets: [{ data: locLabels.length ? Object.values(data.locations) : [1], backgroundColor: ["#8b5cf6", "#c084fc", "#30d158", "#ffd60a"], borderWidth: 0 }],
     }, { responsive: true, maintainAspectRatio: false, cutout: "72%", plugins: { legend: { position: "bottom", labels: { color: "#a1a1a6", font: { size: 9 }, boxWidth: 8 } } } });
-    upsertChart("volumeChart", "bar", { labels: data.volume.labels, datasets: [{ data: data.volume.data, backgroundColor: "rgba(191,90,242,.52)", borderRadius: 6 }] });
+    upsertChart("volumeChart", "bar", { labels: data.volume.labels, datasets: [{ data: data.volume.data, backgroundColor: "rgba(192,132,252,.58)", borderRadius: 6 }] });
   }
 
   async function loadShortlists() {
@@ -609,7 +620,6 @@
   };
 
   $("googleBtn").onclick = () => { window.location.href = "/auth/google/redirect"; };
-  $("appleBtn").onclick = () => toast("Apple sign-in is not configured yet.");
   $("refresh").onclick = () => nav(currentPage);
   $("theme").onclick = () => {
     const on = document.body.classList.toggle("reduced-fx");
