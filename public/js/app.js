@@ -41,6 +41,147 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => element.classList.remove("show"), 3000);
   }
+
+  // Restore the reference's decorative motion without its demo-account or
+  // simulated-mining scripts. Keep the loops paused when the artwork is offscreen.
+  function installReferenceMotion() {
+    const founderTags = document.querySelector(".founder-tags");
+    if (founderTags && !document.querySelector(".social-links")) {
+      const links = document.createElement("div");
+      links.className = "social-links";
+      links.innerHTML = '<a class="btn outline" href="https://github.com/Labique-sk" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a class="btn outline" href="https://www.linkedin.com/in/labique-shaikh-79169b289" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a class="btn outline" href="mailto:labiqueshaikh470@gmail.com" title="labiqueshaikh470@gmail.com">Email ✉</a>';
+      founderTags.insertAdjacentElement("afterend", links);
+    }
+
+    const root = document.documentElement;
+    const applyTheme = () => document.querySelectorAll(".theme-toggle").forEach((button) => {
+      const dark = root.classList.contains("dark");
+      button.textContent = dark ? "☀ Light" : "☾ Dark";
+      button.setAttribute("aria-label", `Switch to ${dark ? "light" : "dark"} theme`);
+    });
+    try { root.classList.toggle("dark", (localStorage.getItem("novamine_theme") || "dark") === "dark"); }
+    catch { root.classList.add("dark"); }
+    [".public-actions", ".app-top-right"].forEach((selector) => {
+      const host = document.querySelector(selector);
+      if (!host || host.querySelector(".theme-toggle")) return;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "theme-toggle";
+      button.addEventListener("click", () => {
+        root.classList.toggle("dark");
+        try { localStorage.setItem("novamine_theme", root.classList.contains("dark") ? "dark" : "light"); } catch { /* Theme still changes for this page. */ }
+        applyTheme();
+      });
+      host.insertBefore(button, host.firstChild);
+    });
+    applyTheme();
+
+    const application = $("application");
+    const topLeft = document.querySelector(".app-top-left");
+    if (application && topLeft && !topLeft.querySelector(".sb-toggle")) {
+      const toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "sb-toggle";
+      toggle.setAttribute("aria-label", "Toggle sidebar");
+      toggle.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>';
+      toggle.addEventListener("click", () => {
+        const collapsed = application.classList.toggle("sb-collapsed");
+        toggle.setAttribute("aria-expanded", String(!collapsed));
+      });
+      topLeft.insertBefore(toggle, topLeft.firstChild);
+      if (window.innerWidth <= 760) application.classList.add("sb-collapsed");
+      toggle.setAttribute("aria-expanded", String(!application.classList.contains("sb-collapsed")));
+    }
+    const founder = document.querySelector(".founder-avatar");
+    if (founder && !founder.querySelector(".atom")) {
+      const skills = ["Software Development", "Data & Analytics", "Product Building", "Backend", "Frontend", "Databases"];
+      [{ angle: 0, duration: 9, direction: "normal" }, { angle: 60, duration: 13, direction: "reverse" }, { angle: 120, duration: 17, direction: "normal" }].forEach((orbit, index) => {
+        const atom = document.createElement("span");
+        atom.className = "atom";
+        atom.style.setProperty("--a", `${orbit.angle}deg`);
+        const track = document.createElement("span");
+        track.className = "atom-track";
+        atom.append(track);
+        [0, 1].forEach((dotIndex) => {
+          const dot = document.createElement("span");
+          dot.className = "atom-e";
+          dot.title = skills[index * 2 + dotIndex];
+          dot.setAttribute("aria-label", dot.title);
+          dot.style.animationDuration = `${orbit.duration}s`;
+          dot.style.animationDirection = orbit.direction;
+          dot.style.animationDelay = `${-orbit.duration * dotIndex / 2}s`;
+          atom.append(dot);
+        });
+        founder.append(atom);
+      });
+    }
+
+    {
+      const orbitSettings = [
+        { radius: 66, duration: 14, angle: 0, direction: "normal" },
+        { radius: 78, duration: 20, angle: 200, direction: "reverse" },
+        { radius: 66, duration: 14, angle: 180, direction: "normal" },
+      ];
+      document.querySelectorAll(".banner-orbit").forEach((orbit) => {
+        if (orbit.querySelector(".bo-track")) return;
+        [...orbit.querySelectorAll(":scope > span")].forEach((icon, index) => {
+          const track = document.createElement("span");
+          track.className = "bo-track";
+          const setting = orbitSettings[index % orbitSettings.length];
+          const delay = -(setting.angle / 360) * setting.duration;
+          track.style.animationDuration = `${setting.duration}s`;
+          track.style.animationDirection = setting.direction;
+          track.style.animationDelay = `${delay}s`;
+          icon.style.cssText = `position:absolute;left:calc(50% - 9px);top:calc(50% - ${setting.radius}px - 9px);animation:spinBack ${setting.duration}s linear infinite;animation-direction:${setting.direction === "normal" ? "reverse" : "normal"};animation-delay:${delay}s;`;
+          track.append(icon);
+          orbit.insertBefore(track, orbit.querySelector("b"));
+        });
+      });
+    }
+
+    // Match the source's pointer-following glass highlight, with one RAF update
+    // per frame so pointer movement does not cause repeated layout work.
+    let pointerFrame = 0;
+    let pointerTarget = null;
+    let pointerX = 0;
+    let pointerY = 0;
+    if (window.matchMedia?.("(pointer: fine)").matches) {
+      document.addEventListener("pointermove", (event) => {
+        const target = event.target.closest?.(".glass,.stat,.feature,.how-step,.compat-card,.feature-card,.table-card,.form-card,.home-banner,.about-story,.benefits-banner,.wbc-banner,.company-banner,.hero-stats,.founder-card,.home-cta");
+        if (!target) return;
+        pointerTarget = target;
+        pointerX = event.clientX;
+        pointerY = event.clientY;
+        if (pointerFrame) return;
+        pointerFrame = requestAnimationFrame(() => {
+          pointerFrame = 0;
+          if (!pointerTarget?.isConnected) return;
+          const bounds = pointerTarget.getBoundingClientRect();
+          pointerTarget.style.setProperty("--mx", `${pointerX - bounds.left}px`);
+          pointerTarget.style.setProperty("--my", `${pointerY - bounds.top}px`);
+        });
+      }, { passive: true });
+    }
+
+    if ("IntersectionObserver" in window) {
+      const setArtworkMotion = (element, playing) => {
+        const state = playing ? "running" : "paused";
+        const selector = ".bo-track,.bo-track > span,.banner-orbit,.atom-e";
+        if (element.matches(selector)) element.style.animationPlayState = state;
+        element.querySelectorAll(selector).forEach((node) => { node.style.animationPlayState = state; });
+      };
+      const observer = new IntersectionObserver((entries) => entries.forEach(({ target, isIntersecting }) => {
+        setArtworkMotion(target, isIntersecting && !document.hidden);
+      }));
+      document.querySelectorAll(".banner-orbit,.founder-avatar").forEach((element) => observer.observe(element));
+      document.addEventListener("visibilitychange", () => {
+        document.querySelectorAll(".banner-orbit,.founder-avatar").forEach((element) => {
+          const visible = !document.hidden && element.getBoundingClientRect().bottom > 0 && element.getBoundingClientRect().top < innerHeight;
+          setArtworkMotion(element, visible);
+        });
+      });
+    }
+  }
   window.toast = toast;
   window.togglePass = (id, button) => {
     const input = $(id);
@@ -369,6 +510,7 @@
   }
 
   async function boot() {
+    installReferenceMotion();
     installCandidateViews();
     connectInteractions();
     const params = new URLSearchParams(location.search);
