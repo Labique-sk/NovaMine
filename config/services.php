@@ -42,6 +42,12 @@ return [
         'auth_redirect' => env('GOOGLE_AUTH_REDIRECT_URI'),
     ],
 
+    'linkedin' => [
+        'client_id' => env('LINKEDIN_CLIENT_ID'),
+        'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
+        'redirect' => env('LINKEDIN_REDIRECT_URI'),
+    ],
+
     'email_validation' => [
         'key' => env('EMAIL_VALIDATION_API_KEY'),
     ],

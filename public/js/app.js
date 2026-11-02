@@ -49,7 +49,7 @@
     if (founderTags && !document.querySelector(".social-links")) {
       const links = document.createElement("div");
       links.className = "social-links";
-      links.innerHTML = '<a class="btn outline" href="https://github.com/Labique-sk" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a class="btn outline" href="https://www.linkedin.com/in/labique-shaikh-79169b289" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a class="btn outline" href="mailto:labiqueshaikh470@gmail.com" title="labiqueshaikh470@gmail.com">Email ✉</a>';
+      links.innerHTML = '<a class="btn outline" href="https://github.com/Labique-sk" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a class="btn outline" href="https://www.linkedin.com/in/labique-shaikh-79169b289" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a class="btn outline" href="mailto:labiqueshaikh470@gmail.com" title="labiqueshaikh470@gmail.com"><svg class="mail-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.5 6.5h17v11h-17z"/><path d="m4 7 8 6 8-6"/></svg>Email</a>';
       founderTags.insertAdjacentElement("afterend", links);
     }
 
@@ -190,7 +190,7 @@
     if (button) button.setAttribute("aria-label", input.type === "password" ? "Show password" : "Hide password");
   };
 
-  const publicViews = ["homePublic", "aboutPublic", "login", "register", "application"];
+  const publicViews = ["homePublic", "aboutPublic", "contactPublic", "privacyPublic", "termsPublic", "login", "register", "forgotPassword", "resetPassword", "application"];
   function showPublic(id) {
     publicViews.forEach((view) => $(view)?.classList.add("hidden"));
     $("publicNav")?.classList.remove("hidden");
@@ -217,7 +217,7 @@
 
   function showApp(user) {
     currentUser = user;
-    ["homePublic", "aboutPublic", "login", "register"].forEach((view) => $(view)?.classList.add("hidden"));
+    ["homePublic", "aboutPublic", "contactPublic", "privacyPublic", "termsPublic", "login", "register", "forgotPassword", "resetPassword"].forEach((view) => $(view)?.classList.add("hidden"));
     $("publicNav")?.classList.add("hidden");
     $("application")?.classList.remove("hidden");
     const name = user?.name || "Workspace user";
@@ -229,6 +229,7 @@
     if ($("profileName")) $("profileName").textContent = name;
     if ($("profileNameInput")) $("profileNameInput").value = name;
     if ($("profileEmailInput")) $("profileEmailInput").value = user?.email || "";
+    if ($("profileResetEmail")) $("profileResetEmail").textContent = user?.email || "your account email";
     const secure = document.querySelector(".secure");
     if (secure) secure.innerHTML = "<b>✦ Platform secure</b>NovaMine workspace · live account";
     goApp("overview");
@@ -452,8 +453,53 @@
     finally { button.disabled = false; }
   }
 
+  function validateEmail(input, errorElement) {
+    const email = input.value.trim();
+    let message = "";
+    if (!email) message = "Enter your email address.";
+    else if (email.length > 30) message = "Email must be 30 characters or fewer.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) message = "Enter a valid email address.";
+    errorElement.textContent = message;
+    input.setAttribute("aria-invalid", String(Boolean(message)));
+    return !message;
+  }
+
+  function validatePassword(input, errorElement) {
+    const password = input.value;
+    let message = "";
+    if (password.length < 8) message = "Password must be at least 8 characters.";
+    else if (password.length > 11) message = "Password must be 11 characters or fewer.";
+    errorElement.textContent = message;
+    input.setAttribute("aria-invalid", String(Boolean(message)));
+    return !message;
+  }
+
+  function bindCredentialValidation(inputId, errorId, validator) {
+    const input = $(inputId), errorElement = $(errorId);
+    if (!input || !errorElement) return;
+    input.addEventListener("input", () => {
+      if (!input.value) { errorElement.textContent = ""; input.removeAttribute("aria-invalid"); return; }
+      validator(input, errorElement);
+    });
+  }
+
+  async function requestPasswordReset(email, button) {
+    const address = String(email || "").trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address) || address.length > 30) {
+      toast(address.length > 30 ? "Email must be 30 characters or fewer." : "Enter a valid email address.");
+      return;
+    }
+    if (button) button.disabled = true;
+    try {
+      await api("/api/auth/forgot-password", { method: "POST", body: { email: address } });
+      toast("If that address belongs to an account, a password reset link is on its way.");
+    } catch (error) { toast(error.message); }
+    finally { if (button) button.disabled = false; }
+  }
+
   async function login(event) {
     event.preventDefault();
+    if (!validateEmail($("loginEmail"), $("loginEmailErr")) || !validatePassword($("loginPassword"), $("loginPassErr"))) return;
     const button = $("loginForm").querySelector('button[type="submit"]');
     button.disabled = true;
     try {
@@ -465,6 +511,9 @@
   }
   async function register(event) {
     event.preventDefault();
+    const validEmail = validateEmail($("regEmail"), $("regEmailErr"));
+    const validPassword = validatePassword($("regPassword"), $("regPasswordErr"));
+    if (!validEmail || !validPassword) return;
     if ($("regPassword").value !== $("regConfirm").value) { toast("The passwords do not match."); return; }
     if ($("terms") && !$("terms").checked) { toast("Please accept the terms before creating your account."); return; }
     const button = $("registerForm").querySelector('button[type="submit"]');
@@ -486,6 +535,38 @@
     document.querySelectorAll("[data-top]").forEach((button) => button.addEventListener("click", () => goApp(topPages[button.dataset.top] || "overview")));
     $("loginForm")?.addEventListener("submit", login);
     $("registerForm")?.addEventListener("submit", register);
+    bindCredentialValidation("loginEmail", "loginEmailErr", validateEmail);
+    bindCredentialValidation("loginPassword", "loginPassErr", validatePassword);
+    bindCredentialValidation("regEmail", "regEmailErr", validateEmail);
+    bindCredentialValidation("regPassword", "regPasswordErr", validatePassword);
+    bindCredentialValidation("forgotEmail", "forgotEmailErr", validateEmail);
+    bindCredentialValidation("resetEmail", "resetEmailErr", validateEmail);
+    bindCredentialValidation("resetNewPassword", "resetPasswordErr", validatePassword);
+    bindCredentialValidation("resetConfirmPassword", "resetConfirmErr", validatePassword);
+    $("forgotPasswordForm")?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (!validateEmail($("forgotEmail"), $("forgotEmailErr"))) return;
+      requestPasswordReset($("forgotEmail").value, $("forgotPasswordForm").querySelector('button[type="submit"]'));
+    });
+    $("profilePasswordReset")?.addEventListener("click", (event) => requestPasswordReset($("profileEmailInput")?.value, event.currentTarget));
+    $("resetPasswordForm")?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const validEmail = validateEmail($("resetEmail"), $("resetEmailErr"));
+      const validPassword = validatePassword($("resetNewPassword"), $("resetPasswordErr"));
+      const confirmation = $("resetConfirmPassword").value;
+      const confirmationError = $("resetConfirmErr");
+      const passwordsMatch = $("resetNewPassword").value === confirmation;
+      confirmationError.textContent = passwordsMatch ? "" : "The passwords do not match.";
+      if (!validEmail || !validPassword || !passwordsMatch) return;
+      const button = $("resetPasswordForm").querySelector('button[type="submit"]');
+      button.disabled = true;
+      try {
+        await api("/api/auth/reset-password", { method: "POST", body: { token: $("resetToken").value, email: $("resetEmail").value.trim(), password: $("resetNewPassword").value, password_confirmation: confirmation } });
+        showPublic("login");
+        toast("Your password has been reset. Sign in with your new password.");
+      } catch (error) { toast(error.message); }
+      finally { button.disabled = false; }
+    });
     $("logout")?.addEventListener("click", window.logout);
     const preferencesSave = document.querySelector("#settings .settings-grid .btn:not(.outline)");
     preferencesSave?.addEventListener("click", () => savePreferences(preferencesSave));
@@ -494,9 +575,9 @@
     if (loginForm) {
       const remember = loginForm.querySelector('input[type="checkbox"]'); if (remember) remember.id = "loginRemember";
       const pwdLabel = loginForm.querySelector('label[for="regName"]'); if (pwdLabel) pwdLabel.htmlFor = "loginPassword";
-      const google = document.createElement("button"); google.type = "button"; google.className = "btn outline"; google.style.marginTop = "10px"; google.textContent = "Continue with Google"; google.addEventListener("click", () => { window.location.href = "/auth/google/redirect"; });
-      loginForm.appendChild(google);
     }
+    $("googleSignIn")?.addEventListener("click", () => { window.location.href = "/auth/google/redirect"; });
+    $("linkedinSignIn")?.addEventListener("click", () => { window.location.href = "/auth/linkedin/redirect"; });
     document.querySelectorAll("#overview .stat .iconbox").forEach((element, index) => { element.textContent = ["♙", "✓", "▥", "✦"][index]; });
     $("overviewRows")?.addEventListener("click", (event) => { const row = event.target.closest("tr[data-candidate]"); if (row) { api(`/api/candidates/${row.dataset.candidate}`).then((data) => renderCandidateDetail(data.candidate || data)).catch((error) => toast(error.message)); } });
     $("candRows")?.addEventListener("click", async (event) => {
@@ -506,7 +587,6 @@
       try { await api(`/api/candidates/${button.dataset.id}/shortlist`, { method: "POST", body: {} }); button.textContent = "Saved"; toast("Candidate added to Saved candidates."); }
       catch (error) { toast(error.message); button.disabled = false; }
     });
-    document.querySelector("#registerForm a[href='#']")?.addEventListener("click", (event) => { event.preventDefault(); toast("Please review the NovaMine terms before continuing."); });
   }
 
   async function boot() {
@@ -515,7 +595,9 @@
     connectInteractions();
     const params = new URLSearchParams(location.search);
     const authMessages = { google_success: "Signed in with Google.", google_not_configured: "Google sign-in needs GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Render.", google_cancelled: "Google sign-in was cancelled.", google_email_unverified: "Google did not return a verified email address.", google_account_conflict: "Sign in with the existing email account before linking Google.", google_failed: "Google sign-in failed. Check the OAuth configuration and callback URL." };
+    Object.assign(authMessages, { linkedin_success: "Signed in with LinkedIn.", linkedin_not_configured: "LinkedIn sign-in needs LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET in Render.", linkedin_cancelled: "LinkedIn sign-in was cancelled.", linkedin_email_unverified: "LinkedIn did not provide a verified email address.", linkedin_account_conflict: "Sign in with the existing account before linking LinkedIn.", linkedin_failed: "LinkedIn sign-in failed. Check the OAuth configuration and callback URL." });
     if (authMessages[params.get("auth")]) toast(authMessages[params.get("auth")]);
+    if (location.pathname.startsWith("/password/reset/") && $("resetToken")?.value) { showPublic("resetPassword"); return; }
     try {
       const { user } = await api("/api/auth/me");
       if (user) { showApp(user); await loadPreferences(); } else showPublic("homePublic");

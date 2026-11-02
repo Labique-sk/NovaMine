@@ -66,3 +66,9 @@ services:
         sync: false
       - key: TAVILY_SEARCH_RESULT_LIMIT
         value: 10
+      - key: LINKEDIN_CLIENT_ID
+        sync: false
+      - key: LINKEDIN_CLIENT_SECRET
+        sync: false
+      - key: LINKEDIN_REDIRECT_URI
+        value: https://novamine-web.onrender.com/auth/linkedin/callback
