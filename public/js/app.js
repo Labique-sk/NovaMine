@@ -424,7 +424,7 @@
     const search = historyRows.find((row) => Number(row.id) === searchId);
     if (!search) return;
     const title = search.query || "this search";
-    if (!window.confirm(`Delete “${title}” and the candidate records saved by this mining run? This cannot be undone.`)) return;
+    if (!window.confirm(`Delete “${title}” and the candidate records saved by this mining run? This cannot be undone and removes those candidates from any shortlists.`)) return;
     button.disabled = true;
     button.textContent = "Deleting…";
     try {
