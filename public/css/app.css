@@ -663,6 +663,19 @@ html.dark .admin-presence.is-online{color:#8de1b5}
 .admin-status-toggle{padding:7px 10px;font-size:10px}
 html.dark .admin-status.is-active{color:#8de1b5;background:#173d30}
 html.dark .admin-status.is-deactivated{color:#ff9ca6;background:#47242c}
+@media(max-width:1200px){
+  .admin-table-wrap{overflow:visible}
+  .admin-table-wrap table{min-width:0;width:100%;border-collapse:separate;border-spacing:0}
+  .admin-table-wrap thead{display:none}
+  .admin-table-wrap tbody{display:grid;gap:10px}
+  .admin-table-wrap tr{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:13px;border:1px solid var(--line,rgba(150,160,190,.2));border-radius:14px;background:rgba(255,255,255,.035)}
+  .admin-table-wrap td{display:block;min-width:0;padding:0;border:0;overflow-wrap:anywhere;font-size:11px}
+  .admin-table-wrap td:before{content:attr(data-label);display:block;margin-bottom:4px;color:var(--muted,#788198);font-size:9px;font-weight:750;letter-spacing:.06em;text-transform:uppercase}
+  .admin-table-wrap td[data-label="User"],.admin-table-wrap td[data-label="Actions"]{grid-column:1/-1}
+  .admin-table-wrap td[data-label="User"]{padding-bottom:8px;border-bottom:1px solid var(--line,rgba(150,160,190,.2))}
+  .admin-table-wrap td[data-label="Actions"] .btn{width:100%;min-height:40px}
+  .admin-table-wrap td[colspan]:before{display:none}
+}
 @media(max-width:760px){.admin-unlock-form{grid-template-columns:1fr}.admin-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-dashboard-heading{align-items:flex-start;flex-direction:column}}
 @media(max-width:600px){
   .admin-access-card{padding:14px;margin-top:14px}
