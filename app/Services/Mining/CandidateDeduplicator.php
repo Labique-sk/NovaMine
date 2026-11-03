@@ -112,6 +112,9 @@ class CandidateDeduplicator
                 $candidate->{$field} = $record[$field];
             }
         }
+        if (($candidate->employment_status === 'unknown' || blank($candidate->employment_status)) && in_array($record['employment_status'] ?? null, ['working', 'student', 'both'], true)) {
+            $candidate->employment_status = $record['employment_status'];
+        }
         $candidate->duplicate_status = 'merged';
         $candidate->save();
 
@@ -134,6 +137,9 @@ class CandidateDeduplicator
             if (blank($left[$field] ?? null) && filled($right[$field] ?? null)) {
                 $left[$field] = $right[$field];
             }
+        }
+        if (($left['employment_status'] ?? 'unknown') === 'unknown' && in_array($right['employment_status'] ?? null, ['working', 'student', 'both'], true)) {
+            $left['employment_status'] = $right['employment_status'];
         }
         $left['skills'] = array_values(array_unique(array_merge($left['skills'] ?? [], $right['skills'] ?? [])));
         $left['duplicate_status'] = 'merged';

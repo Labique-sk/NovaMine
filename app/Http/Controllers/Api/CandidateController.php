@@ -37,7 +37,7 @@ class CandidateController extends Controller
             });
         }
 
-        foreach (['location', 'industry', 'source_name', 'verification_status', 'designation'] as $column) {
+        foreach (['location', 'industry', 'source_name', 'verification_status', 'designation', 'employment_status'] as $column) {
             if ($request->filled($column)) {
                 $value = $request->string($column);
                 // Use LIKE for location to handle partial matches
@@ -161,6 +161,7 @@ class CandidateController extends Controller
                 'source_name' => $recordToSave['source_name'] ?? 'Manual Entry',
                 'source_snippet' => $recordToSave['source_snippet'] ?? null,
                 'candidate_type' => $recordToSave['candidate_type'] ?? null,
+                'employment_status' => $recordToSave['employment_status'] ?? 'unknown',
                 'verification_status' => $recordToSave['verification_status'] ?? 'unverified',
                 'email_validation_status' => $recordToSave['email_validation_status'] ?? null,
                 'phone_validation_status' => $recordToSave['phone_validation_status'] ?? null,
@@ -281,6 +282,7 @@ class CandidateController extends Controller
             'id' => $candidate->id,
             'name' => $candidate->name,
             'designation' => $candidate->designation,
+            'employment_status' => $candidate->employment_status ?: 'unknown',
             'company' => $candidate->company,
             'location' => $candidate->location,
             'years_experience' => $candidate->years_experience,

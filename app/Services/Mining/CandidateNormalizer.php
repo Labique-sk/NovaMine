@@ -39,6 +39,7 @@ class CandidateNormalizer
             'source_name' => $this->nullIfEmpty($record['source_name'] ?? null),
             'source_snippet' => $this->nullIfEmpty($record['source_snippet'] ?? null),
             'candidate_type' => $this->nullIfEmpty($record['candidate_type'] ?? null),
+            'employment_status' => $this->employmentStatus($record),
             'is_synthetic' => (bool) ($record['is_synthetic'] ?? false),
             'skills' => array_values(array_unique(array_filter(array_map(
                 fn ($skill) => trim((string) $skill),
@@ -95,6 +96,31 @@ class CandidateNormalizer
         }
 
         return null;
+    }
+
+    /** @param array<string, mixed> $record */
+    private function employmentStatus(array $record): string
+    {
+        $provided = strtolower(trim((string) ($record['employment_status'] ?? '')));
+        if (in_array($provided, ['working', 'student', 'both', 'unknown'], true)) {
+            return $provided;
+        }
+
+        $education = json_encode($record['education'] ?? [], JSON_UNESCAPED_UNICODE) ?: '';
+        $evidence = implode(' ', [
+            (string) ($record['designation'] ?? $record['role'] ?? ''),
+            (string) ($record['source_snippet'] ?? ''),
+            $education,
+        ]);
+        $isStudent = preg_match('/\b(current student|student|undergraduate student|graduate student|studying)\b/i', $evidence) === 1;
+        $isWorking = trim((string) ($record['company'] ?? '')) !== '' && trim((string) ($record['designation'] ?? $record['role'] ?? '')) !== '';
+
+        return match (true) {
+            $isStudent && $isWorking => 'both',
+            $isStudent => 'student',
+            $isWorking => 'working',
+            default => 'unknown',
+        };
     }
 
     private function nullIfEmpty(mixed $value): ?string

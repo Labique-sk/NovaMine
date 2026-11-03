@@ -24,6 +24,7 @@ class UpdateCandidateRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:40'],
             'profile_url' => ['nullable', 'url', 'max:2048'],
             'portfolio_url' => ['nullable', 'url', 'max:2048'],
+            'employment_status' => ['sometimes', 'required', 'in:working,student,both,unknown'],
         ];
     }
 }

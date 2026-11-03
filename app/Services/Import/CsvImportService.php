@@ -28,6 +28,7 @@ class CsvImportService
         'source_name' => ['source', 'source_name', 'origin'],
         'source_url' => ['source_url', 'url', 'link'],
         'summary' => ['summary', 'description', 'bio', 'about'],
+        'employment_status' => ['employment_status', 'candidate_status'],
     ];
 
     /**
@@ -224,6 +225,11 @@ class CsvImportService
             $data['years_experience'] = (int) preg_replace('/[^0-9]/', '', $data['years_experience']);
         }
 
+        $employmentStatus = strtolower((string) ($data['employment_status'] ?? ''));
+        $data['employment_status'] = in_array($employmentStatus, ['working', 'student', 'both', 'unknown'], true)
+            ? $employmentStatus
+            : 'unknown';
+
         // Normalize skills - split by common delimiters
         if (!empty($data['skills'])) {
             $skills = preg_split('/[,;|]/', $data['skills']);
@@ -296,6 +302,7 @@ class CsvImportService
             'source_url' => $data['source_url'] ?? null,
             'source_name' => $data['source_name'] ?? 'CSV Import',
             'candidate_type' => null,
+            'employment_status' => $data['employment_status'] ?? 'unknown',
             'verification_status' => 'unverified',
             'email_validation_status' => !empty($data['email']) ? 'unverified' : null,
             'phone_validation_status' => !empty($data['phone']) ? 'unverified' : null,

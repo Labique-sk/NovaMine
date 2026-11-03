@@ -329,7 +329,7 @@
     const mine = mountView("mineAnalytics", `<div class="page-head"><div><div class="eyebrow">CANDIDATE MINING</div><h1>Find candidates</h1><p>Describe the role you are hiring for. Each search uses configured data sources and saves real results to your workspace.</p></div></div><div class="glass form-card"><div class="form-grid"><div class="field full"><label for="cdTitle">Search title</label><input id="cdTitle" maxlength="120" placeholder="e.g. Senior React developers — London"></div><div class="field"><label for="cdRole">Job role</label><select id="cdRole"></select></div><div class="field"><label for="cdCountry">Location</label><select id="cdCountry"></select></div><div class="field"><label for="cdIndustry">Industry</label><select id="cdIndustry"></select></div><div class="field"><label for="cdExp">Minimum experience</label><select id="cdExp"><option value="">Any experience</option><option value="1">1+ years</option><option value="3">3+ years</option><option value="5">5+ years</option><option value="8">8+ years</option></select></div><div class="field full"><label for="cdKw">Skills / keywords (comma separated)</label><input id="cdKw" maxlength="255" placeholder="e.g. React, TypeScript, Node.js"></div></div><div class="mining-bottom"><span class="sub">Searches use the data sources configured for your NovaMine workspace.</span><button class="btn" id="cdStart" type="button">✧ Start mining</button></div><div id="cdProg" style="display:none;margin-top:14px"><div class="sub" id="cdProgText">Preparing search…</div><div style="height:6px;border-radius:6px;background:rgba(124,92,255,.15);margin-top:8px;overflow:hidden"><div id="cdProgBar" style="height:100%;width:0;background:linear-gradient(90deg,#a78bfa,#6746d8);transition:width .4s"></div></div></div></div>`);
     options("cdRole", roles, "Choose a role"); options("cdCountry", locations, "Any location"); options("cdIndustry", industries, "Any industry");
     const history = mountView("resultSet", `<div class="page-head"><div><div class="eyebrow">MINING HISTORY</div><h1>Saved searches</h1><p>Review completed searches and open the candidates found in each run.</p></div><button class="btn outline" id="cdNew" type="button">✧ New search</button></div><div class="cd-remine-progress hidden" id="cdRemineProgress" role="status" aria-live="polite" aria-busy="false"><span id="cdRemineText">Re-mining search…</span><div class="cd-progress-track"><i id="cdRemineBar"></i></div></div><div class="metric-cards" id="histMetrics"></div><div class="glass table-card"><div class="table-scroll" style="max-height:none"><table><thead><tr><th>#</th><th>SEARCH</th><th>CRITERIA</th><th>RECORDS</th><th>DATE</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody id="histRows"></tbody></table></div></div>`);
-    const candidates = mountView("result", `<div class="page-head"><div><div class="eyebrow">CANDIDATES</div><h1 id="cdRunTitle">Candidate records</h1><p id="cdRunMeta"></p></div><div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn outline" id="cdBack" type="button">← Mining history</button><button class="btn outline" id="cdExport" type="button">⇩ Export CSV</button></div></div><div class="metric-cards" id="candMetrics"></div><div class="glass table-card"><div class="card-head"><div><h3>Candidate records</h3><div class="sub">Review the saved profiles associated with your search.</div></div><div class="table-tools"><input id="candSearch" class="searchbox" placeholder="Search candidates…"></div></div><div class="table-scroll" style="max-height:none"><table><thead><tr><th>#</th><th>NAME</th><th>ROLE</th><th>COMPANY</th><th>LOCATION</th><th>EXPERIENCE</th><th>SKILLS</th><th>VERIFICATION</th><th></th></tr></thead><tbody id="candRows"></tbody></table></div><div class="pagination"><span id="candSummary"></span><div class="pages"><button id="candPrev" type="button">‹</button><button id="candNext" type="button">›</button></div></div></div>`);
+    const candidates = mountView("result", `<div class="page-head"><div><div class="eyebrow">CANDIDATES</div><h1 id="cdRunTitle">Candidate records</h1><p id="cdRunMeta"></p></div><div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn outline" id="cdBack" type="button">← Mining history</button><button class="btn outline" id="cdExport" type="button">⇩ Export CSV</button></div></div><div class="metric-cards" id="candMetrics"></div><div class="glass table-card"><div class="card-head"><div><h3>Candidate records</h3><div class="sub">Review the saved profiles associated with your search.</div></div><div class="table-tools"><input id="candSearch" class="searchbox" placeholder="Search candidates…"></div></div><div class="table-scroll" style="max-height:none"><table><thead><tr><th>#</th><th>NAME</th><th>ROLE</th><th>TYPE</th><th>COMPANY</th><th>LOCATION</th><th>EXPERIENCE</th><th>SKILLS</th><th>VERIFICATION</th><th></th></tr></thead><tbody id="candRows"></tbody></table></div><div class="pagination"><span id="candSummary"></span><div class="pages"><button id="candPrev" type="button">‹</button><button id="candNext" type="button">›</button></div></div></div>`);
     $("cdNew").onclick = () => goApp("mineAnalytics");
     $("cdBack").onclick = () => goApp("resultSet");
     $("cdStart").onclick = startRealMining;
@@ -347,6 +347,14 @@
     });
     candidates.addEventListener("click", async (event) => {
       if (event.target.closest("#candidateBack")) { $("candidateDetailPanel")?.remove(); return; }
+      const viewButton = event.target.closest(".cd-view");
+      if (viewButton) {
+        try {
+          const detail = await api(`/api/candidates/${Number(viewButton.dataset.id)}`);
+          renderCandidateDetail(detail.candidate || detail);
+        } catch (error) { toast(error.message); }
+        return;
+      }
       const row = event.target.closest("tr[data-candidate]");
       if (!row || event.target.closest("button")) return;
       const id = row.dataset.candidate;
@@ -459,7 +467,7 @@
   async function loadCandidates() {
     const params = new URLSearchParams({ q: candidateQuery, page: String(candidatePage), per_page: "10", sort: "created_at", dir: "desc" });
     if (candidateJobId) params.set("mining_job_id", candidateJobId);
-    $("candRows").innerHTML = `<tr><td colspan="9" style="text-align:center;padding:28px">Loading saved candidates…</td></tr>`;
+    $("candRows").innerHTML = `<tr><td colspan="10" style="text-align:center;padding:28px">Loading saved candidates…</td></tr>`;
     try {
       const result = await api("/api/candidates?" + params.toString());
       const rows = dataArray(result);
@@ -469,11 +477,12 @@
       const verified = rows.filter((candidate) => candidate.status === "verified").length;
       const avg = rows.length ? Math.round(rows.reduce((sum, candidate) => sum + Number(candidate.score || 0), 0) / rows.length) : 0;
       $("candMetrics").innerHTML = metricCard(candidateTotal, "Candidates found") + metricCard(verified, "Verified on this page") + metricCard(`${avg}%`, "Average match score") + metricCard(meta.last_page || 1, "Result pages");
-      $("candRows").innerHTML = rows.map((candidate, index) => `<tr data-candidate="${Number(candidate.id)}"><td data-label="#">${(candidatePage - 1) * 10 + index + 1}</td><td data-label="Name"><b>${esc(candidate.name)}</b><div class="sub">${esc(candidate.email || "")}</div></td><td data-label="Role">${esc(candidate.role || "—")}</td><td data-label="Company">${esc(candidate.company || "—")}</td><td data-label="Location">${esc(candidate.location || "—")}</td><td data-label="Experience">${candidate.experience == null ? "—" : `${Number(candidate.experience)} yrs`}</td><td data-label="Skills">${(candidate.skills || []).slice(0, 4).map((skill) => `<span class="cd-chip">${esc(skill)}</span>`).join("") || "—"}</td><td data-label="Verification"><span class="badge ${candidate.status === "verified" ? "" : "purple"}">${esc(candidate.status || "Review")}</span></td><td data-label="Actions"><button type="button" class="btn outline cd-save" data-id="${Number(candidate.id)}">Save</button></td></tr>`).join("") || `<tr><td colspan="9" style="text-align:center;padding:30px">No candidates match this search.</td></tr>`;
+      const candidateTypes = { working: "Working", student: "Student", both: "Working + student", unknown: "Unknown" };
+      $("candRows").innerHTML = rows.map((candidate, index) => `<tr data-candidate="${Number(candidate.id)}"><td data-label="#">${(candidatePage - 1) * 10 + index + 1}</td><td data-label="Name"><b>${esc(candidate.name)}</b><div class="sub">${esc(candidate.email || "")}</div></td><td data-label="Role">${esc(candidate.role || "—")}</td><td data-label="Type"><span class="badge purple">${esc(candidateTypes[candidate.employment_status] || "Unknown")}</span></td><td data-label="Company">${esc(candidate.company || "—")}</td><td data-label="Location">${esc(candidate.location || "—")}</td><td data-label="Experience">${candidate.experience == null ? "—" : `${Number(candidate.experience)} yrs`}</td><td data-label="Skills">${(candidate.skills || []).slice(0, 4).map((skill) => `<span class="cd-chip">${esc(skill)}</span>`).join("") || "—"}</td><td data-label="Verification"><span class="badge ${candidate.status === "verified" ? "" : "purple"}">${esc(candidate.status || "Review")}</span></td><td data-label="Actions"><button type="button" class="btn outline cd-view" data-id="${Number(candidate.id)}">View</button> <button type="button" class="btn outline cd-save" data-id="${Number(candidate.id)}">Save</button></td></tr>`).join("") || `<tr><td colspan="10" style="text-align:center;padding:30px">No candidates match this search.</td></tr>`;
       $("candSummary").textContent = `Showing ${candidateTotal ? ((candidatePage - 1) * 10) + 1 : 0}–${Math.min(candidatePage * 10, candidateTotal)} of ${candidateTotal} candidates`;
       $("candPrev").disabled = candidatePage <= 1;
       $("candNext").disabled = candidatePage * 10 >= candidateTotal;
-    } catch (error) { $("candRows").innerHTML = `<tr><td colspan="9" style="text-align:center;padding:28px">${esc(error.message)}</td></tr>`; }
+    } catch (error) { $("candRows").innerHTML = `<tr><td colspan="10" style="text-align:center;padding:28px">${esc(error.message)}</td></tr>`; }
   }
   function renderCandidateDetail(candidate) {
     goApp("result");
@@ -482,7 +491,19 @@
     if (!view) return;
     let panel = $("candidateDetailPanel");
     if (!panel) { panel = document.createElement("section"); panel.id = "candidateDetailPanel"; panel.className = "glass"; panel.style.cssText = "padding:22px;margin-top:16px"; view.appendChild(panel); }
-    panel.innerHTML = `<div class="page-head"><div><div class="eyebrow">CANDIDATE PROFILE</div><h2 style="font-size:22px;margin:8px 0">${esc(candidate.name)}</h2><p>Review the information saved from its public source.</p></div><button class="btn outline" id="candidateBack" type="button">Close</button></div><div class="form-grid">${fields.map(([label, value]) => `<div class="field"><label>${esc(label)}</label><input readonly value="${esc(value || "—")}"></div>`).join("")}</div><p class="sub" style="margin-top:15px">Match score: ${Number(candidate.match_score || 0)}% · ${esc(candidate.verification_status || "unverified")}</p>${candidate.source_url ? `<a class="btn outline" href="${esc(candidate.source_url)}" target="_blank" rel="noopener">Open source</a>` : ""}`;
+    const employmentStatus = ["working", "student", "both", "unknown"].includes(candidate.employment_status) ? candidate.employment_status : "unknown";
+    panel.innerHTML = `<div class="page-head"><div><div class="eyebrow">CANDIDATE PROFILE</div><h2 style="font-size:22px;margin:8px 0">${esc(candidate.name)}</h2><p>Review the information saved from its public source.</p></div><button class="btn outline" id="candidateBack" type="button">Close</button></div><div class="form-grid">${fields.map(([label, value]) => `<div class="field"><label>${esc(label)}</label><input readonly value="${esc(value || "—")}"></div>`).join("")}<div class="field"><label for="candidateEmploymentStatus">Candidate type</label><select id="candidateEmploymentStatus"><option value="unknown" ${employmentStatus === "unknown" ? "selected" : ""}>Unknown</option><option value="working" ${employmentStatus === "working" ? "selected" : ""}>Working</option><option value="student" ${employmentStatus === "student" ? "selected" : ""}>Student</option><option value="both" ${employmentStatus === "both" ? "selected" : ""}>Working and student</option></select></div></div><p class="sub" style="margin-top:15px">Match score: ${Number(candidate.match_score || 0)}% · ${esc(candidate.verification_status || "unverified")}</p><button class="btn outline" id="saveCandidateType" type="button">Save candidate type</button> ${candidate.source_url ? `<a class="btn outline" href="${esc(candidate.source_url)}" target="_blank" rel="noopener">Open source</a>` : ""}`;
+    $("saveCandidateType").addEventListener("click", async (event) => {
+      const button = event.currentTarget;
+      button.disabled = true;
+      try {
+        const response = await api(`/api/candidates/${Number(candidate.id)}`, { method: "PUT", body: { employment_status: $("candidateEmploymentStatus").value } });
+        candidate.employment_status = response.candidate?.employment_status || $("candidateEmploymentStatus").value;
+        toast("Candidate type saved.");
+        loadCandidates();
+      } catch (error) { toast(error.message); }
+      finally { button.disabled = false; }
+    });
     panel.scrollIntoView({ behavior: "smooth", block: "start" });
   }
   async function createRealExport() {

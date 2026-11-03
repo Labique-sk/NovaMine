@@ -122,6 +122,7 @@ class MiningPipeline
                         'source_name' => $record['source_name'] ?? null,
                         'source_snippet' => $record['source_snippet'] ?? null,
                         'candidate_type' => $record['candidate_type'] ?? null,
+                        'employment_status' => $record['employment_status'] ?? 'unknown',
                         'verification_status' => $record['verification_status'] ?? 'unverified',
                         'email_validation_status' => $record['email_validation_status'] ?? null,
                         'phone_validation_status' => $record['phone_validation_status'] ?? null,

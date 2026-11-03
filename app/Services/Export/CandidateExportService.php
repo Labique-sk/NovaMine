@@ -86,6 +86,7 @@ class CandidateExportService
                 $out[] = [
                     'name' => $candidate->name,
                     'role' => $candidate->designation,
+                    'employment_status' => $candidate->employment_status ?: 'unknown',
                     'company' => $candidate->company,
                     'location' => $candidate->location,
                     'experience' => $candidate->years_experience,

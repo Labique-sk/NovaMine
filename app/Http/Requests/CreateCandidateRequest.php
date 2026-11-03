@@ -31,6 +31,7 @@ class CreateCandidateRequest extends FormRequest
             'education.*.credential' => ['nullable', 'string', 'max:160'],
             'education.*.field' => ['nullable', 'string', 'max:120'],
             'education.*.year' => ['nullable', 'integer', 'min:1950', 'max:2030'],
+            'employment_status' => ['nullable', 'in:working,student,both,unknown'],
             'source_name' => ['nullable', 'string', 'max:120'],
             'source_url' => ['nullable', 'url', 'max:2048'],
         ];

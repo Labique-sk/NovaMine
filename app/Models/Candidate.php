@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'source_name',
     'source_snippet',
     'candidate_type',
+    'employment_status',
     'verification_status',
     'email_validation_status',
     'phone_validation_status',
@@ -115,6 +116,7 @@ class Candidate extends Model
             'source_name' => $this->source_name,
             'source_url' => $this->source_url,
             'source_snippet' => $this->source_snippet,
+            'employment_status' => $this->employment_status ?: 'unknown',
             'verification_status' => $this->verification_status,
         ];
     }
