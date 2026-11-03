@@ -21,6 +21,7 @@ Route::prefix('auth')->group(function () {
     Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
     Route::post('logout', [AuthController::class, 'logout'])->middleware('auth');
     Route::get('me', [AuthController::class, 'me']);
+    Route::post('presence', [AuthController::class, 'presence'])->middleware(['auth', 'account.active']);
 });
 
 Route::prefix('admin')->middleware(['auth', 'account.active'])->group(function () {

@@ -10,6 +10,9 @@
   let candidateTotal = 0;
   let toastTimer;
   let latestCandidates = [];
+  let presenceTimer = null;
+  let presenceHandler = null;
+  let adminRefreshTimer = null;
 
   function csrfHeaders() {
     const token = document.querySelector('meta[name="csrf-token"]')?.content || "";
@@ -233,12 +236,25 @@
     $("adminAccessCard")?.classList.toggle("hidden", !user?.admin_allowed);
     const secure = document.querySelector(".secure");
     if (secure) secure.innerHTML = "<b>✦ Platform secure</b>NovaMine workspace · live account";
+    startPresenceHeartbeat();
     goApp("overview");
+  }
+  function startPresenceHeartbeat() {
+    if (presenceTimer) return;
+    const sendPresence = () => {
+      if (document.visibilityState === "visible") api("/api/auth/presence", { method: "POST" }).catch(() => {});
+    };
+    presenceHandler = sendPresence;
+    sendPresence();
+    presenceTimer = window.setInterval(sendPresence, 30000);
+    document.addEventListener("visibilitychange", sendPresence);
   }
   window.logout = async () => {
     try { await api("/api/auth/logout", { method: "POST" }); }
     catch (error) { toast(error.message); return; }
     currentUser = null;
+    if (presenceTimer) { clearInterval(presenceTimer); presenceTimer = null; }
+    if (presenceHandler) { document.removeEventListener("visibilitychange", presenceHandler); presenceHandler = null; }
     showPublic("login");
     toast("You have been signed out.");
   };
@@ -507,9 +523,12 @@
     $("adminCandidateTotal").textContent = summary.candidates_mined ?? 0;
     const rows = data.users || [];
     $("adminUserRows").innerHTML = rows.length ? rows.map((user) => {
-      const activeSince = user.active_since ? new Date(user.active_since).toLocaleDateString() : "—";
-      return `<tr><td><strong>${esc(user.name)}</strong><br><span class="sub">${esc(user.email)}</span></td><td>${user.mining_runs}</td><td>${user.candidates_mined}</td><td>${activeSince}</td><td><span class="admin-status ${user.active ? "is-active" : "is-deactivated"}">${user.active ? "Active" : "Deactivated"}</span></td><td><button class="btn ${user.active ? "outline" : ""} admin-status-toggle" data-user-id="${user.id}" data-active="${user.active ? "false" : "true"}" type="button">${user.active ? "Deactivate" : "Reactivate"}</button></td></tr>`;
-    }).join("") : '<tr><td colspan="6">No users found.</td></tr>';
+      const formatTime = (value) => value ? new Date(value).toLocaleString() : "—";
+      const presenceLabel = user.online ? "Online" : user.last_seen_at ? "Offline" : "No activity yet";
+      const presenceClass = user.online ? "is-online" : "is-offline";
+      const lastSeen = user.last_seen_at ? `Last seen ${formatTime(user.last_seen_at)}` : "";
+      return `<tr><td><strong>${esc(user.name)}</strong><br><span class="sub">${esc(user.email)}</span></td><td>${user.mining_runs}</td><td>${user.candidates_mined}</td><td>${esc(formatTime(user.last_login_at))}</td><td><span class="admin-presence ${presenceClass}">${presenceLabel}</span><br><span class="sub">${esc(lastSeen)}</span></td><td>${esc(formatTime(user.offline_since))}</td><td><span class="admin-status ${user.active ? "is-active" : "is-deactivated"}">${user.active ? "Active" : "Deactivated"}</span></td><td><button class="btn ${user.active ? "outline" : ""} admin-status-toggle" data-user-id="${user.id}" data-active="${user.active ? "false" : "true"}" type="button">${user.active ? "Deactivate" : "Reactivate"}</button></td></tr>`;
+    }).join("") : '<tr><td colspan="8">No users found.</td></tr>';
   }
 
   async function loadAdminDashboard() {
@@ -517,6 +536,15 @@
     renderAdminDashboard(data);
     $("adminUnlockForm")?.classList.add("hidden");
     $("adminDashboard")?.classList.remove("hidden");
+    startAdminRefresh();
+  }
+  function startAdminRefresh() {
+    if (!adminRefreshTimer) {
+      adminRefreshTimer = window.setInterval(async () => {
+        if (document.visibilityState !== "visible" || $("adminDashboard")?.classList.contains("hidden")) return;
+        try { renderAdminDashboard(await api("/api/admin/users")); } catch { /* The next manual unlock will report an expired admin session. */ }
+      }, 30000);
+    }
   }
 
   async function login(event) {
@@ -583,6 +611,7 @@
         renderAdminDashboard(data);
         $("adminUnlockForm").classList.add("hidden");
         $("adminDashboard").classList.remove("hidden");
+        startAdminRefresh();
       } catch (requestError) {
         error.textContent = requestError.message;
       } finally { button.disabled = false; }
@@ -590,9 +619,10 @@
     $("adminLock")?.addEventListener("click", async () => {
       try { await api("/api/admin/lock", { method: "POST" }); }
       finally {
+        if (adminRefreshTimer) { clearInterval(adminRefreshTimer); adminRefreshTimer = null; }
         $("adminDashboard")?.classList.add("hidden");
         $("adminUnlockForm")?.classList.remove("hidden");
-        if ($("adminUserRows")) $("adminUserRows").innerHTML = '<tr><td colspan="6">Unlock to load users.</td></tr>';
+        if ($("adminUserRows")) $("adminUserRows").innerHTML = '<tr><td colspan="8">Unlock to load users.</td></tr>';
       }
     });
     $("adminUserRows")?.addEventListener("click", async (event) => {

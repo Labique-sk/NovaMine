@@ -647,7 +647,13 @@ tbody td{line-height:1.5}
 .admin-metric b{font-size:23px;color:#7145cf}
 .admin-metric span{font-size:11px;color:var(--muted,#788198)}
 .admin-table-wrap{max-width:100%;overflow:auto}
-.admin-table-wrap table{min-width:760px}
+.admin-table-wrap table{min-width:1120px}
+.admin-presence{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:750}
+.admin-presence:before{content:"";width:7px;height:7px;border-radius:50%;background:#8b93a5}
+.admin-presence.is-online:before{background:#21b879;box-shadow:0 0 0 3px rgba(33,184,121,.14)}
+.admin-presence.is-online{color:#16764d}
+.admin-presence.is-offline{color:#788198}
+html.dark .admin-presence.is-online{color:#8de1b5}
 .admin-status{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:10px;font-weight:750}
 .admin-status.is-active{color:#16764d;background:#e7f8ef}
 .admin-status.is-deactivated{color:#a33c4b;background:#fff0f1}

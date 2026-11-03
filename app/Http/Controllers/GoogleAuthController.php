@@ -110,6 +110,7 @@ class GoogleAuthController extends Controller
 
             Auth::login($user);
             $request->session()->regenerate();
+            $user->forceFill(['last_login_at' => now(), 'last_seen_at' => now()])->save();
 
             ActivityLog::query()->create([
                 'user_id' => $user->id,

@@ -26,6 +26,7 @@ class AuthController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
+        $user->forceFill(['last_login_at' => now(), 'last_seen_at' => now()])->save();
 
         ActivityLog::query()->create([
             'user_id' => $user->id,
@@ -51,6 +52,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
         $user = $request->user();
+        $user->forceFill(['last_login_at' => now(), 'last_seen_at' => now()])->save();
 
         ActivityLog::query()->create([
             'user_id' => $user->id,
@@ -74,6 +76,18 @@ class AuthController extends Controller
         $user = $request->user();
 
         return response()->json(['user' => $user && $user->is_active ? $this->payload($user) : null]);
+    }
+
+    public function presence(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        abort_unless($user && $user->is_active, 401);
+
+        if (! $user->last_seen_at || $user->last_seen_at->lt(now()->subSeconds(30))) {
+            $user->forceFill(['last_seen_at' => now()])->save();
+        }
+
+        return response()->json(['ok' => true]);
     }
 
     public function forgotPassword(Request $request): JsonResponse

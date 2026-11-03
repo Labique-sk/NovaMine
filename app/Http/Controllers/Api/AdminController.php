@@ -58,6 +58,7 @@ class AdminController extends Controller
 
     private function users(Request $request): JsonResponse
     {
+        $onlineThreshold = now()->subSeconds(90);
         $users = User::query()
             ->withCount(['miningJobs', 'candidates'])
             ->orderByDesc('created_at')
@@ -76,7 +77,12 @@ class AdminController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'active' => $user->is_active,
-                'active_since' => $user->created_at?->toIso8601String(),
+                'last_login_at' => $user->last_login_at?->toIso8601String(),
+                'last_seen_at' => $user->last_seen_at?->toIso8601String(),
+                'online' => (bool) $user->last_seen_at?->gte($onlineThreshold),
+                'offline_since' => $user->last_seen_at?->lt($onlineThreshold)
+                    ? $user->last_seen_at->copy()->addSeconds(90)->toIso8601String()
+                    : null,
                 'mining_runs' => $user->mining_jobs_count,
                 'candidates_mined' => $user->candidates_count,
             ]),
