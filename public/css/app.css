@@ -661,8 +661,18 @@ html.dark .admin-presence.is-online{color:#8de1b5}
 .admin-status.is-active{color:#16764d;background:#e7f8ef}
 .admin-status.is-deactivated{color:#a33c4b;background:#fff0f1}
 .admin-status-toggle{padding:7px 10px;font-size:10px}
+.cd-row-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:190px}
+.cd-row-actions .btn{min-height:40px}
+.cd-delete{color:#b23b4b;border-color:rgba(206,77,99,.35)}
+html.dark .cd-delete{color:#ff9ca6;border-color:rgba(255,156,166,.3)}
+.cd-remine-progress{margin:0 0 16px;padding:12px 14px;border:1px solid var(--line,rgba(150,160,190,.2));border-radius:12px;background:rgba(124,92,255,.06);color:var(--text,#202840);font-size:12px;font-weight:650}
+.cd-progress-track{height:6px;margin-top:9px;overflow:hidden;border-radius:999px;background:rgba(124,92,255,.16)}
+.cd-progress-track i{display:block;width:14%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#a78bfa,#6746d8);transition:width .25s ease;animation:cd-progress-sweep 1.1s ease-in-out infinite alternate}
+.cd-progress-track i.is-complete{animation:none}
+@keyframes cd-progress-sweep{from{transform:translateX(0)}to{transform:translateX(560%)}}
 html.dark .admin-status.is-active{color:#8de1b5;background:#173d30}
 html.dark .admin-status.is-deactivated{color:#ff9ca6;background:#47242c}
+@media(prefers-reduced-motion:reduce){.cd-progress-track i{animation:none}}
 @media(max-width:1200px){
   .admin-table-wrap{overflow:visible}
   .admin-table-wrap table{min-width:0;width:100%;border-collapse:separate;border-spacing:0}
