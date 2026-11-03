@@ -10,9 +10,11 @@ The blueprint generates an `APP_KEY` for a new service. Keep it stable after dep
 
 ## Configure live sourcing
 
-Add `TAVILY_API_KEY` in the Render web service's Environment settings. The blueprint declares a secret input for new services. Render does not prompt for a new `sync: false` value when updating an existing Blueprint, so existing services need this key added manually. `TAVILY_SEARCH_RESULT_LIMIT` defaults to 10. Brave Search is an optional alternate provider; set `BRAVE_SEARCH_API_KEY` if you already have one.
+Add `TAVILY_API_KEY` in the Render web service's Environment settings. The blueprint declares a secret input for new services. Render does not prompt for a new `sync: false` value when updating an existing Blueprint, so existing services need this key added manually. `TAVILY_SEARCH_RESULT_LIMIT` defaults to 10. Brave Search is an optional alternate provider; set `BRAVE_SEARCH_API_KEY` if you already have one. Check the provider's current pricing and limits before use.
 
 GitHub public API discovery is available for technical roles. Set `GITHUB_TOKEN` in the service environment if you need higher API rate limits.
+
+People Data Labs is an optional, credit-based source. Set `PDL_ENABLED=true` and `PDL_API_KEY` only after configuring its credentials and reviewing its current pricing and usage limits.
 
 ## Runtime and data
 
