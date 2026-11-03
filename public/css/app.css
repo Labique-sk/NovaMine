@@ -708,7 +708,7 @@ html.dark .admin-status.is-deactivated{color:#ff9ca6;background:#47242c}
   #profile .admin-dashboard-heading .sub{line-height:1.5}
   #profile .admin-unlock-form .btn{width:100%;min-height:44px}
   #profile .admin-metrics{width:100%;grid-template-columns:repeat(2,minmax(0,1fr))}
-  #profile .admin-table-wrap{width:100%;max-width:100%;min-width:0}
+  #profile .admin-table-wrap{width:100%;max-width:100%;min-width:0;max-height:none;height:auto;overflow:visible}
   #profile .admin-table-wrap tr{width:100%;box-sizing:border-box}
 }
 @media(max-width:380px){
