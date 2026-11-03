@@ -696,3 +696,27 @@ html.dark .admin-status.is-deactivated{color:#ff9ca6;background:#47242c}
   .admin-table-wrap td[data-label="Actions"] .btn{width:100%}
   .admin-table-wrap td[colspan]:before{display:none}
 }
+
+/* Keep the profile shell from squeezing the admin tools on narrow screens. */
+@media(max-width:760px){
+  #profile .profile-card{grid-template-columns:minmax(0,1fr);gap:14px;padding:14px}
+  #profile .profile-summary{padding:10px 8px 16px;border-right:0;border-bottom:1px solid var(--line,#e3e6ee)}
+  #profile .profile-card>div:last-child{width:100%;min-width:0}
+  #profile .admin-access-card{padding:14px}
+  #profile .admin-dashboard-heading{width:100%;min-width:0}
+  #profile .admin-dashboard-heading>div{min-width:0}
+  #profile .admin-dashboard-heading .sub{line-height:1.5}
+  #profile .admin-unlock-form .btn{width:100%;min-height:44px}
+  #profile .admin-metrics{width:100%;grid-template-columns:repeat(2,minmax(0,1fr))}
+  #profile .admin-table-wrap{width:100%;max-width:100%;min-width:0}
+  #profile .admin-table-wrap tr{width:100%;box-sizing:border-box}
+}
+@media(max-width:380px){
+  #profile .admin-access-card{padding:11px}
+  #profile .admin-metrics{gap:7px}
+  #profile .admin-metric{padding:9px}
+  #profile .admin-metric b{font-size:18px}
+  #profile .admin-metric span{font-size:10px;line-height:1.35}
+  #profile .admin-table-wrap tr{grid-template-columns:minmax(0,1fr);gap:9px}
+  #profile .admin-table-wrap td[data-label="User"],#profile .admin-table-wrap td[data-label="Actions"]{grid-column:auto}
+}
