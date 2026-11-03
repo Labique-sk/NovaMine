@@ -86,14 +86,17 @@
       toggle.type = "button";
       toggle.className = "sb-toggle";
       toggle.setAttribute("aria-label", "Toggle sidebar");
+      toggle.setAttribute("aria-controls", "novamine-sidebar");
       toggle.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>';
       toggle.addEventListener("click", () => {
         const collapsed = application.classList.toggle("sb-collapsed");
         toggle.setAttribute("aria-expanded", String(!collapsed));
+        toggle.setAttribute("aria-label", collapsed ? "Show navigation labels" : "Hide navigation labels");
       });
       topLeft.insertBefore(toggle, topLeft.firstChild);
       if (window.innerWidth <= 760) application.classList.add("sb-collapsed");
       toggle.setAttribute("aria-expanded", String(!application.classList.contains("sb-collapsed")));
+      toggle.setAttribute("aria-label", application.classList.contains("sb-collapsed") ? "Show navigation labels" : "Hide navigation labels");
     }
     const founder = document.querySelector(".founder-avatar");
     if (founder && !founder.querySelector(".atom")) {
@@ -322,7 +325,7 @@
   }
   function installCandidateViews() {
     const names = { overview: "Dashboard", mineAnalytics: "Candidate Mining", resultSet: "Mining History", result: "Candidates", profile: "Profile", settings: "Settings", about: "About Us" };
-    document.querySelectorAll("[data-side]").forEach((button) => { if (names[button.dataset.side]) button.innerHTML = `<span class="si">${button.dataset.side === "overview" ? "⌂" : button.dataset.side === "mineAnalytics" ? "▥" : button.dataset.side === "resultSet" ? "◷" : button.dataset.side === "result" ? "♙" : "⚙"}</span>${names[button.dataset.side]}`; });
+    document.querySelectorAll("[data-side]").forEach((button) => { if (names[button.dataset.side]) { const icon = button.querySelector(".si")?.textContent || (button.dataset.side === "overview" ? "⌂" : button.dataset.side === "mineAnalytics" ? "▥" : button.dataset.side === "resultSet" ? "◷" : button.dataset.side === "result" ? "♙" : "⚙"); button.title = names[button.dataset.side]; button.setAttribute("aria-label", names[button.dataset.side]); button.innerHTML = `<span class="si">${icon}</span><span class="side-text">${names[button.dataset.side]}</span>`; } });
     const mine = mountView("mineAnalytics", `<div class="page-head"><div><div class="eyebrow">CANDIDATE MINING</div><h1>Find candidates</h1><p>Describe the role you are hiring for. Each search uses configured data sources and saves real results to your workspace.</p></div></div><div class="glass form-card"><div class="form-grid"><div class="field full"><label for="cdTitle">Search title</label><input id="cdTitle" maxlength="120" placeholder="e.g. Senior React developers — London"></div><div class="field"><label for="cdRole">Job role</label><select id="cdRole"></select></div><div class="field"><label for="cdCountry">Location</label><select id="cdCountry"></select></div><div class="field"><label for="cdIndustry">Industry</label><select id="cdIndustry"></select></div><div class="field"><label for="cdExp">Minimum experience</label><select id="cdExp"><option value="">Any experience</option><option value="1">1+ years</option><option value="3">3+ years</option><option value="5">5+ years</option><option value="8">8+ years</option></select></div><div class="field full"><label for="cdKw">Skills / keywords (comma separated)</label><input id="cdKw" maxlength="255" placeholder="e.g. React, TypeScript, Node.js"></div></div><div class="mining-bottom"><span class="sub">Searches use the data sources configured for your NovaMine workspace.</span><button class="btn" id="cdStart" type="button">✧ Start mining</button></div><div id="cdProg" style="display:none;margin-top:14px"><div class="sub" id="cdProgText">Preparing search…</div><div style="height:6px;border-radius:6px;background:rgba(124,92,255,.15);margin-top:8px;overflow:hidden"><div id="cdProgBar" style="height:100%;width:0;background:linear-gradient(90deg,#a78bfa,#6746d8);transition:width .4s"></div></div></div></div>`);
     options("cdRole", roles, "Choose a role"); options("cdCountry", locations, "Any location"); options("cdIndustry", industries, "Any industry");
     const history = mountView("resultSet", `<div class="page-head"><div><div class="eyebrow">MINING HISTORY</div><h1>Saved searches</h1><p>Review completed searches and open the candidates found in each run.</p></div><button class="btn outline" id="cdNew" type="button">✧ New search</button></div><div class="cd-remine-progress hidden" id="cdRemineProgress" role="status" aria-live="polite" aria-busy="false"><span id="cdRemineText">Re-mining search…</span><div class="cd-progress-track"><i id="cdRemineBar"></i></div></div><div class="metric-cards" id="histMetrics"></div><div class="glass table-card"><div class="table-scroll" style="max-height:none"><table><thead><tr><th>#</th><th>SEARCH</th><th>CRITERIA</th><th>RECORDS</th><th>DATE</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody id="histRows"></tbody></table></div></div>`);

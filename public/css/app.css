@@ -440,14 +440,23 @@ html.dark .logo,html.dark .company-mark{background:url("data:image/svg+xml;chars
 .sb-toggle{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 .sb-toggle:focus{outline:none}
 @media (min-width:761px){
-  #application .app-body{transition:grid-template-columns .4s cubic-bezier(.2,.8,.2,1)}
-  #application .sidebar{min-width:0;overflow:hidden;transition:padding .4s cubic-bezier(.2,.8,.2,1),opacity .3s ease}
-  #application.sb-collapsed .app-body{grid-template-columns:0px minmax(0,1fr) !important}
-  #application.sb-collapsed .sidebar{padding-left:0 !important;padding-right:0 !important;opacity:0;pointer-events:none}
+  #application .app-body{transition:grid-template-columns .35s cubic-bezier(.2,.8,.2,1)}
+  #application .sidebar{min-width:0;overflow:hidden;transition:padding .35s cubic-bezier(.2,.8,.2,1)}
+  #application.sb-collapsed .app-body{grid-template-columns:76px minmax(0,1fr) !important}
+  #application.sb-collapsed .sidebar{padding-left:8px !important;padding-right:8px !important}
+  #application.sb-collapsed .sidebar .side-label,
+  #application.sb-collapsed .sidebar .side-text,
+  #application.sb-collapsed .sidebar .secure{opacity:0;pointer-events:none}
+  #application.sb-collapsed .sidebar .side-label{height:0;padding-top:0;padding-bottom:0;overflow:hidden}
+  #application.sb-collapsed .sidebar .secure{display:none}
+  #application.sb-collapsed .sidebar .side-nav button{justify-content:center;gap:0;padding-left:8px;padding-right:8px}
+  #application.sb-collapsed .sidebar .side-text{width:0;max-width:0;overflow:hidden;white-space:nowrap}
 }
 @media (max-width:760px){
-  #application .sidebar{overflow:hidden;max-height:1200px;transition:max-height .4s cubic-bezier(.2,.8,.2,1),opacity .3s ease,padding .4s ease}
-  #application.sb-collapsed .sidebar{max-height:0 !important;opacity:0;pointer-events:none;padding-top:0 !important;padding-bottom:0 !important}
+  #application .sidebar{overflow-x:auto;overflow-y:hidden;transition:padding .3s ease}
+  #application.sb-collapsed .sidebar .side-label,
+  #application.sb-collapsed .sidebar .side-text{display:none}
+  #application.sb-collapsed .sidebar .side-nav button{justify-content:center;gap:0;width:40px;min-width:40px;padding-left:8px;padding-right:8px}
 }
 
 /* ===== NovaMine refinement layer: quiet depth, consistent rhythm, smoother states ===== */
