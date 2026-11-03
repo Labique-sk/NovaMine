@@ -255,6 +255,7 @@
     currentUser = null;
     if (presenceTimer) { clearInterval(presenceTimer); presenceTimer = null; }
     if (presenceHandler) { document.removeEventListener("visibilitychange", presenceHandler); presenceHandler = null; }
+    if (adminRefreshTimer) { clearInterval(adminRefreshTimer); adminRefreshTimer = null; }
     showPublic("login");
     toast("You have been signed out.");
   };
@@ -527,7 +528,7 @@
       const presenceLabel = user.online ? "Online" : user.last_seen_at ? "Offline" : "No activity yet";
       const presenceClass = user.online ? "is-online" : "is-offline";
       const lastSeen = user.last_seen_at ? `Last seen ${formatTime(user.last_seen_at)}` : "";
-      return `<tr><td><strong>${esc(user.name)}</strong><br><span class="sub">${esc(user.email)}</span></td><td>${user.mining_runs}</td><td>${user.candidates_mined}</td><td>${esc(formatTime(user.last_login_at))}</td><td><span class="admin-presence ${presenceClass}">${presenceLabel}</span><br><span class="sub">${esc(lastSeen)}</span></td><td>${esc(formatTime(user.offline_since))}</td><td><span class="admin-status ${user.active ? "is-active" : "is-deactivated"}">${user.active ? "Active" : "Deactivated"}</span></td><td><button class="btn ${user.active ? "outline" : ""} admin-status-toggle" data-user-id="${user.id}" data-active="${user.active ? "false" : "true"}" type="button">${user.active ? "Deactivate" : "Reactivate"}</button></td></tr>`;
+      return `<tr><td data-label="User"><strong>${esc(user.name)}</strong><br><span class="sub">${esc(user.email)}</span></td><td data-label="Mining runs">${user.mining_runs}</td><td data-label="Candidates">${user.candidates_mined}</td><td data-label="Last sign-in">${esc(formatTime(user.last_login_at))}</td><td data-label="Presence / last seen"><span class="admin-presence ${presenceClass}">${presenceLabel}</span><br><span class="sub">${esc(lastSeen)}</span></td><td data-label="Offline since">${esc(formatTime(user.offline_since))}</td><td data-label="Account status"><span class="admin-status ${user.active ? "is-active" : "is-deactivated"}">${user.active ? "Active" : "Deactivated"}</span></td><td data-label="Actions"><button class="btn ${user.active ? "outline" : ""} admin-status-toggle" data-user-id="${user.id}" data-active="${user.active ? "false" : "true"}" type="button">${user.active ? "Deactivate" : "Reactivate"}</button></td></tr>`;
     }).join("") : '<tr><td colspan="8">No users found.</td></tr>';
   }
 
