@@ -43,75 +43,93 @@ class PeopleDataLabsAdapter implements SourceAdapterInterface
         ))), 0, 5);
         $should = array_map(static fn (string $skill) => ['match' => ['skills' => $skill]], $skillTerms);
 
-        $limit = min(20, max(1, (int) config('services.pdl.result_limit', 10)));
+        $limit = min(100, max(1, (int) ($criteria['max_iterations'] ?? config('services.pdl.result_limit', 10))));
+        $pageSize = min(20, $limit);
 
         try {
-            $response = Http::connectTimeout(4)
-                ->timeout(20)
-                ->withHeaders([
-                    'X-Api-Key' => $apiKey,
-                    'Accept' => 'application/json',
-                ])
-                ->post(self::ENDPOINT, [
+            $records = [];
+            $scrollToken = null;
+            $iterations = 0;
+
+            while ($iterations < 100 && count($records) < $limit) {
+                $payload = [
                     'query' => ['bool' => array_filter([
                         'must' => $must,
                         'should' => $should ?: null,
                     ])],
-                    'size' => $limit,
+                    'size' => min($pageSize, $limit - count($records)),
                     'dataset' => 'resume',
                     'titlecase' => true,
                     'data_include' => self::DATA_FIELDS,
-                ]);
-
-            if (! $response->successful()) {
-                Log::warning('People Data Labs search failed', ['status' => $response->status()]);
-
-                return [];
-            }
-
-            $records = [];
-            foreach (array_slice((array) $response->json('data', []), 0, $limit) as $person) {
-                if (! is_array($person)) {
-                    continue;
-                }
-
-                $name = trim((string) ($person['full_name'] ?? ''));
-                if ($name === '') {
-                    $name = trim((string) ($person['first_name'] ?? '').' '.(string) ($person['last_name'] ?? ''));
-                }
-                if ($name === '') {
-                    continue;
-                }
-
-                $profileUrl = $this->profileUrl($person);
-                $personSkills = $person['skills'] ?? [];
-                if (is_string($personSkills)) {
-                    $personSkills = preg_split('/[,;]+/', $personSkills) ?: [];
-                }
-
-                $records[] = [
-                    'name' => $name,
-                    'designation' => $person['job_title'] ?? null,
-                    'company' => $person['job_company_name'] ?? null,
-                    'experience' => $person['inferred_years_experience'] ?? null,
-                    'industry' => $person['job_company_industry'] ?? $person['industry'] ?? null,
-                    'skills' => array_values(array_filter((array) $personSkills, 'is_string')),
-                    'location' => $person['location_name'] ?? implode(', ', array_filter([
-                        $person['location_locality'] ?? null,
-                        $person['location_region'] ?? null,
-                        $person['location_country'] ?? null,
-                    ])),
-                    'email' => $person['work_email'] ?? null,
-                    'profile_url' => $profileUrl,
-                    'source_url' => $profileUrl,
-                    'source_name' => $this->name(),
-                    'source_snippet' => $person['summary'] ?? null,
-                    'candidate_type' => (string) ($criteria['candidate_type'] ?? 'Professional'),
-                    'is_synthetic' => false,
                 ];
+                if ($scrollToken !== null) {
+                    $payload['scroll_token'] = $scrollToken;
+                }
+
+                $response = Http::connectTimeout(4)
+                    ->timeout(20)
+                    ->withHeaders([
+                        'X-Api-Key' => $apiKey,
+                        'Accept' => 'application/json',
+                    ])
+                    ->post(self::ENDPOINT, $payload);
+
+                if (! $response->successful()) {
+                    Log::warning('People Data Labs search failed', ['status' => $response->status()]);
+
+                    break;
+                }
+
+                $people = (array) $response->json('data', []);
+                foreach ($people as $person) {
+                    $iterations++;
+                    if (! is_array($person)) {
+                        continue;
+                    }
+
+                    $name = trim((string) ($person['full_name'] ?? ''));
+                    if ($name === '') {
+                        $name = trim((string) ($person['first_name'] ?? '').' '.(string) ($person['last_name'] ?? ''));
+                    }
+                    if ($name === '') {
+                        continue;
+                    }
+
+                    $profileUrl = $this->profileUrl($person);
+                    $personSkills = $person['skills'] ?? [];
+                    if (is_string($personSkills)) {
+                        $personSkills = preg_split('/[,;]+/', $personSkills) ?: [];
+                    }
+
+                    $records[] = [
+                        'name' => $name,
+                        'designation' => $person['job_title'] ?? null,
+                        'company' => $person['job_company_name'] ?? null,
+                        'experience' => $person['inferred_years_experience'] ?? null,
+                        'industry' => $person['job_company_industry'] ?? $person['industry'] ?? null,
+                        'skills' => array_values(array_filter((array) $personSkills, 'is_string')),
+                        'location' => $person['location_name'] ?? implode(', ', array_filter([
+                            $person['location_locality'] ?? null,
+                            $person['location_region'] ?? null,
+                            $person['location_country'] ?? null,
+                        ])),
+                        'email' => $person['work_email'] ?? null,
+                        'profile_url' => $profileUrl,
+                        'source_url' => $profileUrl,
+                        'source_name' => $this->name(),
+                        'source_snippet' => $person['summary'] ?? null,
+                        'candidate_type' => (string) ($criteria['candidate_type'] ?? 'Professional'),
+                        'is_synthetic' => false,
+                    ];
+                }
+
+                $scrollToken = $response->json('scroll_token');
+                if ($people === [] || ! is_string($scrollToken) || $scrollToken === '') {
+                    break;
+                }
             }
 
-            return $records;
+            return array_slice($records, 0, $limit);
         } catch (Throwable $exception) {
             // Do not log request headers, response bodies, or exception details that may contain credentials.
             Log::warning('People Data Labs adapter request failed', ['exception' => $exception::class]);

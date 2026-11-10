@@ -25,6 +25,7 @@ class StartMiningRequest extends FormRequest
             'profile_url' => ['nullable', 'url'],
             'sources' => ['nullable', 'array'],
             'include_demo' => ['nullable', 'boolean'],
+            'max_iterations' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }
 }

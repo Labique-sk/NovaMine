@@ -10,14 +10,13 @@ class CandidateDeduplicator
 {
     public function __construct(
         private readonly CandidateNormalizer $normalizer
-    ) {
-    }
+    ) {}
 
     /**
      * @param  list<array<string, mixed>>  $incoming
-     * @return array{unique:list<array<string,mixed>>,duplicates:int}
+     * @return array{unique:list<array<string,mixed>>,duplicates:int,updated:list<array{candidate:Candidate,record:array<string,mixed>}>}
      */
-    public function dedupe(User $user, array $incoming): array
+    public function dedupe(User $user, array $incoming, ?int $refreshMiningJobId = null): array
     {
         $existing = Candidate::query()
             ->ownedBy($user)
@@ -27,17 +26,29 @@ class CandidateDeduplicator
         $unique = [];
         $duplicates = 0;
         $seen = [];
+        $updated = [];
 
         foreach ($incoming as $record) {
             $key = $this->fingerprint($record);
-            $match = $this->findExisting($existing, $record) ?? ($seen[$key] ?? null);
+            $match = null;
+            if ($refreshMiningJobId !== null) {
+                $recordName = $this->nameKey((string) ($record['name'] ?? ''));
+                $match = $existing->first(fn (Candidate $candidate) => (int) $candidate->mining_job_id === $refreshMiningJobId
+                    && $this->nameKey($candidate->name) === $recordName
+                    && $this->isDuplicate($candidate, $record));
+            }
+            $match ??= $this->findExisting($existing, $record) ?? ($seen[$key] ?? null);
 
             if ($match !== null) {
                 $duplicates++;
                 if (is_array($match)) {
                     $seen[$key] = $this->mergeRecords($match, $record);
                 } else {
-                    $this->mergeIntoModel($match, $record);
+                    $shouldRefresh = $refreshMiningJobId !== null && (int) $match->mining_job_id === $refreshMiningJobId;
+                    $this->mergeIntoModel($match, $record, $shouldRefresh);
+                    if ($shouldRefresh) {
+                        $updated[$match->id] = ['candidate' => $match, 'record' => $record];
+                    }
                 }
 
                 continue;
@@ -47,7 +58,7 @@ class CandidateDeduplicator
             $seen[$key] = $record;
         }
 
-        return ['unique' => array_values($seen), 'duplicates' => $duplicates];
+        return ['unique' => array_values($seen), 'duplicates' => $duplicates, 'updated' => array_values($updated)];
     }
 
     /**
@@ -105,18 +116,28 @@ class CandidateDeduplicator
     /**
      * @param  array<string, mixed>  $record
      */
-    public function mergeIntoModel(Candidate $candidate, array $record): void
+    public function mergeIntoModel(Candidate $candidate, array $record, bool $replaceFilled = false): void
     {
-        foreach (['designation', 'company', 'location', 'professional_email', 'phone', 'profile_url', 'portfolio_url', 'industry'] as $field) {
-            if (blank($candidate->{$field}) && filled($record[$field] ?? null)) {
+        foreach (['designation', 'company', 'years_experience', 'location', 'professional_email', 'phone', 'profile_url', 'portfolio_url', 'industry', 'source_url', 'source_name', 'source_snippet', 'verification_status', 'email_validation_status', 'phone_validation_status', 'profile_validation_status'] as $field) {
+            if (filled($record[$field] ?? null) && ($replaceFilled || blank($candidate->{$field}))) {
                 $candidate->{$field} = $record[$field];
             }
         }
-        if (($candidate->employment_status === 'unknown' || blank($candidate->employment_status)) && in_array($record['employment_status'] ?? null, ['working', 'student', 'both'], true)) {
+        if (in_array($record['employment_status'] ?? null, ['working', 'student', 'both'], true)
+            && ($replaceFilled || $candidate->employment_status === 'unknown' || blank($candidate->employment_status))) {
             $candidate->employment_status = $record['employment_status'];
         }
         $candidate->duplicate_status = 'merged';
         $candidate->save();
+
+        foreach ($record['skills'] ?? [] as $skill) {
+            if (is_string($skill) && trim($skill) !== '') {
+                $candidate->skills()->updateOrCreate(
+                    ['name' => trim($skill)],
+                    ['is_match' => false],
+                );
+            }
+        }
 
         if (! empty($record['source_name'])) {
             $candidate->sources()->firstOrCreate([

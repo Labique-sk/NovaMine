@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateCandidateRequest;
 use App\Http\Requests\UpdateCandidateRequest;
 use App\Models\Candidate;
+use App\Models\CandidateSkill;
 use App\Models\Shortlist;
 use App\Services\Intelligence\CandidateScoringService;
 use App\Services\Mining\CandidateDeduplicator;
+use App\Services\Mining\CandidateNormalizer;
 use App\Services\Mining\CandidateValidator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -33,6 +35,14 @@ class CandidateController extends Controller
                     ->orWhere('company', 'like', "%{$q}%")
                     ->orWhere('location', 'like', "%{$q}%")
                     ->orWhere('professional_email', 'like', "%{$q}%")
+                    ->orWhere('phone', 'like', "%{$q}%")
+                    ->orWhere('profile_url', 'like', "%{$q}%")
+                    ->orWhere('industry', 'like', "%{$q}%")
+                    ->orWhere('source_name', 'like', "%{$q}%")
+                    ->orWhere('source_snippet', 'like', "%{$q}%")
+                    ->orWhere('portfolio_url', 'like', "%{$q}%")
+                    ->orWhere('candidate_type', 'like', "%{$q}%")
+                    ->orWhere('employment_status', 'like', "%{$q}%")
                     ->orWhereHas('skills', fn (Builder $s) => $s->where('name', 'like', "%{$q}%"));
             });
         }
@@ -42,7 +52,7 @@ class CandidateController extends Controller
                 $value = $request->string($column);
                 // Use LIKE for location to handle partial matches
                 if ($column === 'location') {
-                    $query->where($column, 'like', '%' . $value . '%');
+                    $query->where($column, 'like', '%'.$value.'%');
                 } else {
                     $query->where($column, $value);
                 }
@@ -58,7 +68,7 @@ class CandidateController extends Controller
         if ($request->filled('min_score')) {
             $query->where(function (Builder $query) use ($request) {
                 $query->where('match_score', '>=', $request->integer('min_score'))
-                      ->orWhereNull('match_score');
+                    ->orWhereNull('match_score');
             });
         }
         if ($request->filled('experience_min')) {
@@ -83,12 +93,38 @@ class CandidateController extends Controller
             'location' => 'location',
             'experience' => 'years_experience',
             'score' => 'match_score',
+            'email' => 'professional_email',
+            'phone' => 'phone',
+            'linkedin_id' => 'profile_url',
             'created_at' => 'created_at',
         ];
         $column = $sortMap[$sort] ?? 'match_score';
-        $query->orderBy($column, $dir)->orderByDesc('id');
+        if ($sort === 'skills') {
+            $query->orderBy(
+                CandidateSkill::query()
+                    ->selectRaw('LOWER(name)')
+                    ->whereColumn('candidate_skills.candidate_id', 'candidates.id')
+                    ->orderByRaw('LOWER(name) asc')
+                    ->limit(1),
+                $dir,
+            );
+        } elseif (in_array($sort, ['name', 'role', 'company', 'location', 'email', 'phone', 'linkedin_id'], true)) {
+            $query->orderByRaw('LOWER('.$column.') '.$dir);
+        } else {
+            $query->orderBy($column, $dir);
+        }
+        $query->orderBy('id', 'asc');
 
-        $page = $query->paginate($request->integer('per_page', 10));
+        $summary = (clone $query)
+            ->reorder()
+            ->selectRaw(
+                'COUNT(*) AS total, SUM(CASE WHEN verification_status = ? THEN 1 ELSE 0 END) AS verified_total, AVG(match_score) AS average_match_score',
+                ['verified'],
+            )
+            ->first();
+
+        $perPage = min(100, max(15, $request->integer('per_page', 15)));
+        $page = $query->paginate($perPage);
 
         return response()->json([
             'data' => collect($page->items())->map->toSearchArray()->values(),
@@ -96,7 +132,9 @@ class CandidateController extends Controller
                 'current_page' => $page->currentPage(),
                 'last_page' => $page->lastPage(),
                 'per_page' => $page->perPage(),
-                'total' => $page->total(),
+                'total' => (int) ($summary?->total ?? $page->total()),
+                'verified_total' => (int) ($summary?->verified_total ?? 0),
+                'average_match_score' => $summary?->average_match_score === null ? null : (int) round((float) $summary->average_match_score),
             ],
         ]);
     }
@@ -104,7 +142,7 @@ class CandidateController extends Controller
     public function store(CreateCandidateRequest $request, CandidateValidator $validator, CandidateDeduplicator $deduplicator, CandidateScoringService $scoring): JsonResponse
     {
         $user = $request->user();
-        
+
         // Prepare candidate data in the format expected by existing services
         $record = array_merge($request->validated(), [
             'is_synthetic' => false,
@@ -113,7 +151,7 @@ class CandidateController extends Controller
         ]);
 
         // Normalize the record using existing normalizer
-        $normalizer = app(\App\Services\Mining\CandidateNormalizer::class);
+        $normalizer = app(CandidateNormalizer::class);
         $normalized = $normalizer->normalize($record);
 
         // Validate using existing validator
@@ -126,7 +164,7 @@ class CandidateController extends Controller
 
         // Check for duplicates using existing deduplicator
         $dedupeResult = $deduplicator->dedupe($user, [$normalized]);
-        
+
         if (empty($dedupeResult['unique'])) {
             return response()->json([
                 'message' => 'This candidate already exists in your database.',

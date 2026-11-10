@@ -100,6 +100,12 @@ class Candidate extends Model
 
     public function toSearchArray(): array
     {
+        $profileHost = strtolower((string) parse_url((string) $this->profile_url, PHP_URL_HOST));
+        $profilePath = trim((string) parse_url((string) $this->profile_url, PHP_URL_PATH), '/');
+        $linkedinId = str_contains($profileHost, 'linkedin.com') && str_starts_with($profilePath, 'in/')
+            ? substr($profilePath, 3)
+            : null;
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -111,6 +117,8 @@ class Candidate extends Model
             'status' => $this->uiStatus(),
             'email' => $this->professional_email,
             'phone' => $this->phone,
+            'linkedin_id' => $linkedinId,
+            'profile_url' => $this->profile_url,
             'skills' => $this->relationLoaded('skills') ? $this->skills->pluck('name')->all() : [],
             'is_synthetic' => $this->is_synthetic,
             'source_name' => $this->source_name,

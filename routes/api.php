@@ -55,6 +55,7 @@ Route::middleware(['auth', 'account.active'])->group(function () {
     Route::delete('shortlists/{shortlist}', [ShortlistController::class, 'destroy']);
 
     Route::get('searches', [SearchController::class, 'index']);
+    Route::post('searches/{search}/remine', [SearchController::class, 'remine'])->middleware('throttle:5,1');
     Route::delete('searches/{search}', [SearchController::class, 'destroy']);
 
     Route::get('exports', [ExportController::class, 'index']);

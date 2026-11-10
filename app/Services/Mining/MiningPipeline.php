@@ -35,8 +35,7 @@ class MiningPipeline
         private readonly CandidateValidator $validator,
         private readonly CandidateDeduplicator $deduplicator,
         private readonly CandidateScoringService $scoring,
-    ) {
-    }
+    ) {}
 
     public function run(MiningJob $job): void
     {
@@ -46,6 +45,7 @@ class MiningPipeline
         }
 
         $criteria = array_merge(['role' => $job->query], $job->filters ?? []);
+        $maxIterations = min(100, max(1, (int) ($criteria['max_iterations'] ?? 100)));
         $started = microtime(true);
 
         try {
@@ -61,11 +61,15 @@ class MiningPipeline
                 $collected = array_merge($collected, $adapter->collect($criteria));
             }
 
+            $collected = array_slice($collected, 0, $maxIterations);
             $this->stage($job, 'running', self::STAGES[2], 24, ['total_found' => count($collected)]);
             $this->stage($job, 'running', self::STAGES[3], 36);
 
             $normalized = [];
-            foreach ($collected as $record) {
+            foreach ($collected as $iteration => $record) {
+                if ($iteration >= $maxIterations) {
+                    break;
+                }
                 $item = $this->normalizer->normalize($record);
                 if ($item['name'] !== '') {
                     $normalized[] = $item;
@@ -87,7 +91,7 @@ class MiningPipeline
             }
 
             $this->stage($job, 'validating', self::STAGES[7], 74);
-            $deduped = $this->deduplicator->dedupe($job->user, $validated);
+            $deduped = $this->deduplicator->dedupe($job->user, $validated, (int) $job->id);
 
             $this->stage($job, 'running', self::STAGES[8], 84);
             $toSave = [];
@@ -98,12 +102,38 @@ class MiningPipeline
                 $record['score'] = $this->scoring->score($record, $criteria);
                 $toSave[] = $record;
             }
+            $toUpdate = [];
+            foreach ($deduped['updated'] as $updated) {
+                $record = $updated['record'];
+                $record['score'] = $this->scoring->score($record, $criteria);
+                $toUpdate[] = ['candidate' => $updated['candidate'], 'record' => $record];
+            }
 
             $this->stage($job, 'running', self::STAGES[9], 92);
             $saved = 0;
             $verified = 0;
 
-            DB::transaction(function () use ($job, $toSave, &$saved, &$verified) {
+            DB::transaction(function () use ($job, $toSave, $toUpdate, &$saved, &$verified) {
+                foreach ($toUpdate as $updated) {
+                    $candidate = $updated['candidate'];
+                    $record = $updated['record'];
+                    $candidate->forceFill([
+                        'match_score' => $record['score']['match_score'] ?? null,
+                        'score_breakdown' => $record['score'],
+                    ])->save();
+                    foreach ($record['skills'] ?? [] as $skill) {
+                        if (is_string($skill) && trim($skill) !== '') {
+                            $candidate->skills()->updateOrCreate(
+                                ['name' => trim($skill)],
+                                ['is_match' => in_array($skill, $record['score']['matching_skills'] ?? [], true)],
+                            );
+                        }
+                    }
+                    $saved++;
+                    if (($record['verification_status'] ?? null) === 'verified') {
+                        $verified++;
+                    }
+                }
                 foreach ($toSave as $record) {
                     $candidate = Candidate::query()->create([
                         'user_id' => $job->user_id,
@@ -186,9 +216,10 @@ class MiningPipeline
                 'completed_at' => now(),
             ]);
 
-            Search::query()->create([
+            Search::query()->updateOrCreate([
                 'user_id' => $job->user_id,
                 'mining_job_id' => $job->id,
+            ], [
                 'query' => $job->query,
                 'filters' => $job->filters,
                 'result_count' => $saved,

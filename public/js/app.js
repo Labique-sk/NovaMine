@@ -7,6 +7,9 @@
   let candidatePage = 1;
   let candidateQuery = "";
   let candidateJobId = null;
+  let candidateSort = "name";
+  let candidateDirection = "asc";
+  const candidatePageSize = 15;
   let candidateTotal = 0;
   let toastTimer;
   let latestCandidates = [];
@@ -80,8 +83,8 @@
     applyTheme();
 
     const application = $("application");
-    const topLeft = document.querySelector(".app-top-left");
-    if (application && topLeft && !topLeft.querySelector(".sb-toggle")) {
+    const topRight = document.querySelector(".app-top-right");
+    if (application && topRight && !topRight.querySelector(".sb-toggle")) {
       const toggle = document.createElement("button");
       toggle.type = "button";
       toggle.className = "sb-toggle";
@@ -93,7 +96,7 @@
         toggle.setAttribute("aria-expanded", String(!collapsed));
         toggle.setAttribute("aria-label", collapsed ? "Show navigation labels" : "Hide navigation labels");
       });
-      topLeft.insertBefore(toggle, topLeft.firstChild);
+      topRight.appendChild(toggle);
       if (window.innerWidth <= 760) application.classList.add("sb-collapsed");
       toggle.setAttribute("aria-expanded", String(!application.classList.contains("sb-collapsed")));
       toggle.setAttribute("aria-label", application.classList.contains("sb-collapsed") ? "Show navigation labels" : "Hide navigation labels");
@@ -262,6 +265,9 @@
 
   function dataArray(result) { return Array.isArray(result?.data) ? result.data : []; }
   function metricCard(value, label) { return `<div class="glass metric"><b>${esc(value)}</b><span>${esc(label)}</span></div>`; }
+  function summaryCard(title, mainValue, metrics) {
+    return `<section class="glass cd-summary"><div class="cd-summary-main"><span>${esc(title)}</span><strong>${esc(mainValue)}</strong></div><div class="cd-summary-stats">${metrics.map(([value, label]) => `<div><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`).join("")}</div></section>`;
+  }
   async function loadDashboard() {
     try {
       const [data, analytics, shortlists, searches] = await Promise.all([
@@ -328,15 +334,16 @@
     document.querySelectorAll("[data-side]").forEach((button) => { if (names[button.dataset.side]) { const icon = button.querySelector(".si")?.textContent || (button.dataset.side === "overview" ? "⌂" : button.dataset.side === "mineAnalytics" ? "▥" : button.dataset.side === "resultSet" ? "◷" : button.dataset.side === "result" ? "♙" : "⚙"); button.title = names[button.dataset.side]; button.setAttribute("aria-label", names[button.dataset.side]); button.innerHTML = `<span class="si">${icon}</span><span class="side-text">${names[button.dataset.side]}</span>`; } });
     const mine = mountView("mineAnalytics", `<div class="page-head"><div><div class="eyebrow">CANDIDATE MINING</div><h1>Find candidates</h1><p>Describe the role you are hiring for. Each search uses configured data sources and saves real results to your workspace.</p></div></div><div class="glass form-card"><div class="form-grid"><div class="field full"><label for="cdTitle">Search title</label><input id="cdTitle" maxlength="120" placeholder="e.g. Senior React developers — London"></div><div class="field"><label for="cdRole">Job role</label><select id="cdRole"></select></div><div class="field"><label for="cdCountry">Location</label><select id="cdCountry"></select></div><div class="field"><label for="cdIndustry">Industry</label><select id="cdIndustry"></select></div><div class="field"><label for="cdExp">Minimum experience</label><select id="cdExp"><option value="">Any experience</option><option value="1">1+ years</option><option value="3">3+ years</option><option value="5">5+ years</option><option value="8">8+ years</option></select></div><div class="field full"><label for="cdKw">Skills / keywords (comma separated)</label><input id="cdKw" maxlength="255" placeholder="e.g. React, TypeScript, Node.js"></div></div><div class="mining-bottom"><span class="sub">Searches use the data sources configured for your NovaMine workspace.</span><button class="btn" id="cdStart" type="button">✧ Start mining</button></div><div id="cdProg" style="display:none;margin-top:14px"><div class="sub" id="cdProgText">Preparing search…</div><div style="height:6px;border-radius:6px;background:rgba(124,92,255,.15);margin-top:8px;overflow:hidden"><div id="cdProgBar" style="height:100%;width:0;background:linear-gradient(90deg,#a78bfa,#6746d8);transition:width .4s"></div></div></div></div>`);
     options("cdRole", roles, "Choose a role"); options("cdCountry", locations, "Any location"); options("cdIndustry", industries, "Any industry");
-    const history = mountView("resultSet", `<div class="page-head"><div><div class="eyebrow">MINING HISTORY</div><h1>Saved searches</h1><p>Review completed searches and open the candidates found in each run.</p></div><button class="btn outline" id="cdNew" type="button">✧ New search</button></div><div class="cd-remine-progress hidden" id="cdRemineProgress" role="status" aria-live="polite" aria-busy="false"><span id="cdRemineText">Re-mining search…</span><div class="cd-progress-track"><i id="cdRemineBar"></i></div></div><div class="metric-cards" id="histMetrics"></div><div class="glass table-card"><div class="table-scroll" style="max-height:none"><table><thead><tr><th>#</th><th>SEARCH</th><th>CRITERIA</th><th>RECORDS</th><th>DATE</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody id="histRows"></tbody></table></div></div>`);
-    const candidates = mountView("result", `<div class="page-head"><div><div class="eyebrow">CANDIDATES</div><h1 id="cdRunTitle">Candidate records</h1><p id="cdRunMeta"></p></div><div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn outline" id="cdBack" type="button">← Mining history</button><button class="btn outline" id="cdExport" type="button">⇩ Export CSV</button></div></div><div class="metric-cards" id="candMetrics"></div><div class="glass table-card"><div class="card-head"><div><h3>Candidate records</h3><div class="sub">Review the saved profiles associated with your search.</div></div><div class="table-tools"><input id="candSearch" class="searchbox" placeholder="Search candidates…"></div></div><div class="table-scroll" style="max-height:none"><table><thead><tr><th>#</th><th>NAME</th><th>ROLE</th><th>TYPE</th><th>COMPANY</th><th>LOCATION</th><th>EXPERIENCE</th><th>SKILLS</th><th>VERIFICATION</th><th></th></tr></thead><tbody id="candRows"></tbody></table></div><div class="pagination"><span id="candSummary"></span><div class="pages"><button id="candPrev" type="button">‹</button><button id="candNext" type="button">›</button></div></div></div>`);
+    const history = mountView("resultSet", `<div class="page-head cd-page-head"><button class="cd-icon-button" id="cdHistoryBack" type="button" aria-label="Back to dashboard" title="Back to dashboard"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 5-7 7 7 7M8 12h12"/></svg></button><div><div class="eyebrow">MINING HISTORY</div><h1>Saved searches</h1><p>Review completed searches and open the candidates found in each run.</p></div><button class="btn outline" id="cdNew" type="button">✧ New search</button></div><div class="cd-remine-progress hidden" id="cdRemineProgress" role="status" aria-live="polite" aria-busy="false"><span id="cdRemineText">Re-mining search…</span><div class="cd-progress-track"><i id="cdRemineBar"></i></div></div><div id="histMetrics"></div><div class="glass table-card"><div class="table-scroll" style="max-height:none"><table><thead><tr><th>#</th><th>SEARCH</th><th>CRITERIA</th><th>RECORDS</th><th>DATE</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody id="histRows"></tbody></table></div></div>`);
+    const candidates = mountView("result", `<div class="page-head cd-page-head"><button class="cd-icon-button" id="cdBack" type="button" aria-label="Back to mining history" title="Back to mining history"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 5-7 7 7 7M8 12h12"/></svg></button><div><div class="eyebrow">CANDIDATES</div><h1 id="cdRunTitle">Candidate records</h1><p id="cdRunMeta"></p></div><div class="cd-page-actions"><button class="cd-icon-button" id="cdExport" type="button" aria-label="Export CSV" title="Export CSV" data-tooltip="Export CSV"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v4h16v-4"/></svg></button></div></div><div id="candMetrics"></div><div class="glass table-card cd-candidate-table"><div class="card-head"><div><h3>Candidate records</h3><div class="sub">Review the saved profiles associated with your search.</div></div><div class="table-tools"><input id="candSearch" class="searchbox" placeholder="Search candidates…" aria-label="Search candidate data"></div></div><div class="table-scroll" style="max-height:none"><table><thead><tr><th data-sort="name" tabindex="0" role="button" scope="col">NAME</th><th data-sort="role" tabindex="0" role="button" scope="col">ROLE</th><th data-sort="company" tabindex="0" role="button" scope="col">COMPANY</th><th data-sort="location" tabindex="0" role="button" scope="col">LOCATION</th><th data-sort="experience" tabindex="0" role="button" scope="col">EXPERIENCE</th><th data-sort="email" tabindex="0" role="button" scope="col">EMAIL</th><th data-sort="phone" tabindex="0" role="button" scope="col">PHONE NUMBER</th><th data-sort="skills" tabindex="0" role="button" scope="col">SKILLS / LINKEDIN ID</th></tr></thead><tbody id="candRows"></tbody></table></div><div class="pagination"><span id="candSummary"></span><div class="pages"><button id="candPrev" type="button" aria-label="Previous page">‹</button><button id="candNext" type="button" aria-label="Next page">›</button></div></div></div>`);
     $("cdNew").onclick = () => goApp("mineAnalytics");
+    $("cdHistoryBack").onclick = () => goApp("overview");
     $("cdBack").onclick = () => goApp("resultSet");
     $("cdStart").onclick = startRealMining;
     $("cdExport").onclick = createRealExport;
     $("candSearch").oninput = (event) => { clearTimeout(window.__candidateSearchTimer); window.__candidateSearchTimer = setTimeout(() => { candidateQuery = event.target.value.trim(); candidatePage = 1; loadCandidates(); }, 250); };
     $("candPrev").onclick = () => { if (candidatePage > 1) { candidatePage--; loadCandidates(); } };
-    $("candNext").onclick = () => { if (candidatePage * 10 < candidateTotal) { candidatePage++; loadCandidates(); } };
+    $("candNext").onclick = () => { if (candidatePage * candidatePageSize < candidateTotal) { candidatePage++; loadCandidates(); } };
     history.addEventListener("click", (event) => {
       const remine = event.target.closest("[data-remine]");
       if (remine) { event.stopPropagation(); remineSearch(Number(remine.dataset.remine), remine); return; }
@@ -347,7 +354,7 @@
     });
     candidates.addEventListener("click", async (event) => {
       if (event.target.closest("#candidateBack")) { $("candidateDetailPanel")?.remove(); return; }
-      const viewButton = event.target.closest(".cd-view");
+      const viewButton = event.target.closest(".cd-candidate-detail[data-id]");
       if (viewButton) {
         try {
           const detail = await api(`/api/candidates/${Number(viewButton.dataset.id)}`);
@@ -356,10 +363,26 @@
         return;
       }
       const row = event.target.closest("tr[data-candidate]");
-      if (!row || event.target.closest("button")) return;
+      if (!row || event.target.closest("button,a")) return;
       const id = row.dataset.candidate;
       const detail = await api(`/api/candidates/${id}`);
       renderCandidateDetail(detail.candidate || detail);
+    });
+    candidates.querySelectorAll("th[data-sort]").forEach((header) => {
+      const sortByHeader = () => {
+        const nextSort = header.dataset.sort;
+        candidateDirection = candidateSort === nextSort && candidateDirection === "asc" ? "desc" : "asc";
+        candidateSort = nextSort;
+        candidatePage = 1;
+        loadCandidates();
+      };
+      header.addEventListener("click", sortByHeader);
+      header.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          sortByHeader();
+        }
+      });
     });
   }
 
@@ -371,10 +394,15 @@
     if (!role) { toast("Choose a job role before starting a search."); return; }
     button.disabled = true;
     $("cdProg").style.display = "block";
-    $("cdProgText").textContent = "Searching configured data sources…";
+    $("cdProgText").textContent = "Searching sources and processing up to 100 candidate records…";
     $("cdProgBar").style.width = "25%";
+    let progressValue = 25;
+    const progressTimer = window.setInterval(() => {
+      progressValue = Math.min(progressValue + 5, 88);
+      $("cdProgBar").style.width = `${progressValue}%`;
+    }, 900);
     try {
-      const result = await api("/api/mining", { method: "POST", body: { role, location: $("cdCountry").value, industry: $("cdIndustry").value, experience: $("cdExp").value, keywords, skills: keywords, sources: ["people_data_labs", "tavily"], include_demo: false } });
+      const result = await api("/api/mining", { method: "POST", body: { role, location: $("cdCountry").value, industry: $("cdIndustry").value, experience: $("cdExp").value, keywords, skills: keywords, max_iterations: 100, sources: ["people_data_labs", "tavily"], include_demo: false } });
       const job = result.job || {};
       $("cdProgBar").style.width = "100%";
       $("cdProgText").textContent = job.status === "completed" ? `Mining complete · ${job.processed || 0} candidate records saved.` : job.error_message || "Search finished.";
@@ -387,13 +415,15 @@
       $("cdProgText").textContent = error.message;
       $("cdProgBar").style.width = "100%";
       toast(error.message);
-    } finally { button.disabled = false; }
+    } finally {
+      window.clearInterval(progressTimer);
+      button.disabled = false;
+    }
   }
 
   async function remineSearch(searchId, button) {
     const search = historyRows.find((row) => Number(row.id) === searchId);
     if (!search) return;
-    const filters = search.filters || {};
     const progress = $("cdRemineProgress");
     const progressText = $("cdRemineText");
     const progressBar = $("cdRemineBar");
@@ -410,14 +440,12 @@
       if (progressBar) progressBar.style.width = `${progressValue}%`;
     }, 650);
     try {
-      const result = await api("/api/mining", { method: "POST", body: { role: search.query || "Software Engineer", location: filters.location || "", industry: filters.industry || "", experience: filters.experience || "", skills: filters.skills || filters.keywords || "", keywords: filters.keywords || "", sources: ["people_data_labs", "tavily"], include_demo: false } });
+      const result = await api(`/api/searches/${searchId}/remine`, { method: "POST" });
       const job = result.job || {};
       toast(job.status === "completed" ? `Re-mining complete: ${job.processed || 0} candidates saved.` : job.error_message || "Re-mining did not complete.");
       if (progressText) progressText.textContent = job.status === "completed" ? `Re-mining complete · ${job.processed || 0} candidate records saved.` : job.error_message || "Re-mining did not complete.";
       if (progressBar) { progressBar.classList.add("is-complete"); progressBar.style.width = "100%"; }
-      candidateJobId = job.id || null;
       await Promise.all([loadHistory(), loadDashboard()]);
-      if (job.status === "completed") { candidatePage = 1; goApp("result"); }
     } catch (error) {
       if (progressText) progressText.textContent = error.message;
       if (progressBar) { progressBar.classList.add("is-complete"); progressBar.style.width = "100%"; }
@@ -426,7 +454,7 @@
       window.clearInterval(progressTimer);
       progress?.setAttribute("aria-busy", "false");
       button.disabled = false;
-      button.textContent = "↻ Re-mine";
+      button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M5.7 9a7 7 0 0 1 11.8-2L20 12M4 12l2.5 5a7 7 0 0 0 11.8-2"/></svg><span>Re-mine</span>';
       window.setTimeout(() => progress?.classList.add("hidden"), 1800);
     }
   }
@@ -437,7 +465,6 @@
     const title = search.query || "this search";
     if (!window.confirm(`Delete “${title}” and the candidate records saved by this mining run? This cannot be undone and removes those candidates from any shortlists.`)) return;
     button.disabled = true;
-    button.textContent = "Deleting…";
     try {
       const result = await api(`/api/searches/${searchId}`, { method: "DELETE" });
       toast(result.message || "Search and its saved candidate records were deleted.");
@@ -445,7 +472,6 @@
     } catch (error) {
       toast(error.message);
       button.disabled = false;
-      button.textContent = "Delete data";
     }
   }
 
@@ -453,36 +479,47 @@
     try {
       const result = await api("/api/searches?per_page=100");
       historyRows = dataArray(result);
-      const totalCandidates = historyRows.reduce((sum, row) => sum + Number(row.result_count || 0), 0);
-      const completed = historyRows.filter((row) => row.status === "completed").length;
-      $("histMetrics").innerHTML = metricCard(historyRows.length, "Saved searches") + metricCard(totalCandidates, "Candidates found") + metricCard(completed, "Completed searches");
+      const summary = result.summary || {};
+      const totalCandidates = Number(summary.candidate_records ?? historyRows.reduce((sum, row) => sum + Number(row.result_count || 0), 0));
+      const completed = Number(summary.completed_searches ?? historyRows.filter((row) => row.status === "completed").length);
+      const totalSearches = Number(summary.saved_searches ?? result.meta?.total ?? historyRows.length);
+      $("histMetrics").innerHTML = summaryCard("Mining history", totalSearches.toLocaleString(), [[totalCandidates.toLocaleString(), "Candidate records"], [completed.toLocaleString(), "Completed searches"]]);
       $("histRows").innerHTML = historyRows.map((row, index) => {
         const filters = row.filters || {};
         const criteria = [row.query, filters.location, filters.industry, filters.keywords].filter(Boolean).join(" · ") || "Search criteria";
-        return `<tr data-search="${Number(row.id)}" data-job="${Number(row.mining_job_id) || ""}" data-title="${esc(row.query || "Candidate search")}" data-count="${Number(row.result_count || 0)}" data-date="${esc(row.created_at || "")}" style="cursor:pointer"><td data-label="#">${index + 1}</td><td data-label="Search"><b>${esc(row.query || "Candidate search")}</b></td><td data-label="Criteria" class="muted">${esc(criteria)}</td><td data-label="Records"><span class="badge purple">${Number(row.result_count || 0)}</span></td><td data-label="Date">${esc(row.created_at || "")}</td><td data-label="Status">${esc(row.status || "—")}</td><td data-label="Actions"><div class="cd-row-actions"><button type="button" class="btn outline cd-remine" data-remine="${Number(row.id)}">↻ Re-mine</button><button type="button" class="btn outline cd-delete" data-delete-search="${Number(row.id)}">Delete data</button></div></td></tr>`;
+        return `<tr data-search="${Number(row.id)}" data-job="${Number(row.mining_job_id) || ""}" data-title="${esc(row.query || "Candidate search")}" data-count="${Number(row.result_count || 0)}" data-date="${esc(row.created_at || "")}" style="cursor:pointer"><td data-label="#">${index + 1}</td><td data-label="Search"><b>${esc(row.query || "Candidate search")}</b></td><td data-label="Criteria" class="muted">${esc(criteria)}</td><td data-label="Records"><span class="badge purple">${Number(row.result_count || 0)}</span></td><td data-label="Date">${esc(row.created_at || "")}</td><td data-label="Status">${esc(row.status || "—")}</td><td data-label="Actions"><div class="cd-row-actions"><button type="button" class="btn outline cd-remine" data-remine="${Number(row.id)}" aria-label="Re-mine search" title="Re-mine search"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M5.7 9a7 7 0 0 1 11.8-2L20 12M4 12l2.5 5a7 7 0 0 0 11.8-2"/></svg></button><button type="button" class="btn outline cd-delete" data-delete-search="${Number(row.id)}" aria-label="Delete Data" title="Delete Data" data-tooltip="Delete Data"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M5.5 7l1 14h11l1-14M9 7V4h6v3"/></svg></button></div></td></tr>`;
       }).join("") || `<tr><td colspan="7" style="text-align:center;padding:30px">No searches yet. Start a candidate search to see results here.</td></tr>`;
     } catch (error) { toast(error.message); }
   }
 
   async function loadCandidates() {
-    const params = new URLSearchParams({ q: candidateQuery, page: String(candidatePage), per_page: "10", sort: "created_at", dir: "desc" });
+    const params = new URLSearchParams({ q: candidateQuery, page: String(candidatePage), per_page: String(candidatePageSize), sort: candidateSort, dir: candidateDirection });
     if (candidateJobId) params.set("mining_job_id", candidateJobId);
-    $("candRows").innerHTML = `<tr><td colspan="10" style="text-align:center;padding:28px">Loading saved candidates…</td></tr>`;
+    $("candRows").innerHTML = `<tr><td colspan="8" style="text-align:center;padding:28px">Loading saved candidates…</td></tr>`;
     try {
       const result = await api("/api/candidates?" + params.toString());
       const rows = dataArray(result);
       const meta = result.meta || {};
       candidateTotal = Number(meta.total || 0);
       latestCandidates = rows;
-      const verified = rows.filter((candidate) => candidate.status === "verified").length;
-      const avg = rows.length ? Math.round(rows.reduce((sum, candidate) => sum + Number(candidate.score || 0), 0) / rows.length) : 0;
-      $("candMetrics").innerHTML = metricCard(candidateTotal, "Candidates found") + metricCard(verified, "Verified on this page") + metricCard(`${avg}%`, "Average match score") + metricCard(meta.last_page || 1, "Result pages");
-      const candidateTypes = { working: "Working", student: "Student", both: "Working + student", unknown: "Unknown" };
-      $("candRows").innerHTML = rows.map((candidate, index) => `<tr data-candidate="${Number(candidate.id)}"><td data-label="#">${(candidatePage - 1) * 10 + index + 1}</td><td data-label="Name"><b>${esc(candidate.name)}</b><div class="sub">${esc(candidate.email || "")}</div></td><td data-label="Role">${esc(candidate.role || "—")}</td><td data-label="Type"><span class="badge purple">${esc(candidateTypes[candidate.employment_status] || "Unknown")}</span></td><td data-label="Company">${esc(candidate.company || "—")}</td><td data-label="Location">${esc(candidate.location || "—")}</td><td data-label="Experience">${candidate.experience == null ? "—" : `${Number(candidate.experience)} yrs`}</td><td data-label="Skills">${(candidate.skills || []).slice(0, 4).map((skill) => `<span class="cd-chip">${esc(skill)}</span>`).join("") || "—"}</td><td data-label="Verification"><span class="badge ${candidate.status === "verified" ? "" : "purple"}">${esc(candidate.status || "Review")}</span></td><td data-label="Actions"><button type="button" class="btn outline cd-view" data-id="${Number(candidate.id)}">View</button> <button type="button" class="btn outline cd-save" data-id="${Number(candidate.id)}">Save</button></td></tr>`).join("") || `<tr><td colspan="10" style="text-align:center;padding:30px">No candidates match this search.</td></tr>`;
-      $("candSummary").textContent = `Showing ${candidateTotal ? ((candidatePage - 1) * 10) + 1 : 0}–${Math.min(candidatePage * 10, candidateTotal)} of ${candidateTotal} candidates`;
+      document.querySelectorAll("#result th[data-sort]").forEach((header) => {
+        header.setAttribute("aria-sort", header.dataset.sort === candidateSort
+          ? (candidateDirection === "asc" ? "ascending" : "descending")
+          : "none");
+      });
+      const average = meta.average_match_score == null ? "—" : `${Number(meta.average_match_score)}%`;
+      $("candMetrics").innerHTML = summaryCard("Candidate records", candidateTotal.toLocaleString(), [[Number(meta.verified_total || 0).toLocaleString(), "Verified"], [average, "Average match score"], [Number(meta.last_page || 1).toLocaleString(), "Result pages"]]);
+      $("candRows").innerHTML = rows.map((candidate) => {
+        const skills = (candidate.skills || []).slice(0, 4).map((skill) => `<span class="cd-chip">${esc(skill)}</span>`).join("") || "—";
+        const linkedin = candidate.linkedin_id && candidate.profile_url
+          ? `<a class="cd-linkedin" href="${esc(candidate.profile_url)}" target="_blank" rel="noopener noreferrer" aria-label="Open LinkedIn profile">${esc(candidate.linkedin_id)}</a>`
+          : "";
+        return `<tr data-candidate="${Number(candidate.id)}"><td data-label="Name"><b>${esc(candidate.name)}</b></td><td data-label="Role">${esc(candidate.role || "—")}</td><td data-label="Company">${esc(candidate.company || "—")}</td><td data-label="Location">${esc(candidate.location || "—")}</td><td data-label="Experience" data-sort-value="${candidate.experience == null ? "" : Number(candidate.experience)}">${candidate.experience == null ? "—" : `${Number(candidate.experience)} yrs`}</td><td data-label="Email">${candidate.email ? `<a href="mailto:${esc(candidate.email)}">${esc(candidate.email)}</a>` : "—"}</td><td data-label="Phone Number">${candidate.phone ? `<a href="tel:${esc(candidate.phone)}">${esc(candidate.phone)}</a>` : "—"}</td><td data-label="Skills / LinkedIn ID"><div class="cd-skills-cell">${skills}${linkedin ? `<span class="cd-linkedin-wrap">LinkedIn ID ${linkedin}</span>` : ""}</div></td></tr>`;
+      }).join("") || `<tr><td colspan="8" style="text-align:center;padding:30px">No candidates match this search.</td></tr>`;
+      $("candSummary").textContent = `Showing ${candidateTotal ? ((candidatePage - 1) * candidatePageSize) + 1 : 0}–${Math.min(candidatePage * candidatePageSize, candidateTotal)} of ${candidateTotal} candidates`;
       $("candPrev").disabled = candidatePage <= 1;
-      $("candNext").disabled = candidatePage * 10 >= candidateTotal;
-    } catch (error) { $("candRows").innerHTML = `<tr><td colspan="10" style="text-align:center;padding:28px">${esc(error.message)}</td></tr>`; }
+      $("candNext").disabled = candidatePage * candidatePageSize >= candidateTotal;
+    } catch (error) { $("candRows").innerHTML = `<tr><td colspan="8" style="text-align:center;padding:28px">${esc(error.message)}</td></tr>`; }
   }
   function renderCandidateDetail(candidate) {
     goApp("result");
