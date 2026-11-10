@@ -686,11 +686,13 @@ html.dark .cd-delete{color:#ff9ca6;border-color:rgba(255,156,166,.3)}
 .cd-icon-button[data-tooltip]::after{position:absolute;z-index:20;right:0;top:calc(100% + 8px);padding:7px 9px;border-radius:6px;background:#171a29;color:#fff;font-size:11px;font-weight:600;white-space:nowrap;content:attr(data-tooltip);opacity:0;pointer-events:none;transform:translateY(-3px);transition:opacity .14s,transform .14s}
 .cd-icon-button[data-tooltip]:hover::after,.cd-icon-button[data-tooltip]:focus-visible::after{opacity:1;transform:translateY(0)}
 .cd-summary{display:grid;grid-template-columns:minmax(180px,.8fr) 2fr;align-items:center;gap:20px;margin:0 0 14px;padding:18px 20px}
+#result #candMetrics>.cd-summary{grid-column:1/-1;width:100%;min-width:0;box-sizing:border-box}
 .cd-summary-main>span,.cd-summary-stats span{display:block;color:var(--muted,#788198);font-size:11px}
 .cd-summary-main>strong{display:block;margin-top:3px;color:var(--text,#202840);font-size:25px;line-height:1.15}
 .cd-summary-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.cd-summary-stats>div{padding-left:15px;border-left:1px solid var(--line,rgba(120,130,160,.18))}
+.cd-summary-stats>div{min-width:0;padding-left:15px;border-left:1px solid var(--line,rgba(120,130,160,.18))}
 .cd-summary-stats strong{display:block;margin-bottom:4px;color:var(--text,#202840);font-size:15px}
+.cd-summary-stats span{overflow-wrap:anywhere}
 .cd-candidate-table{overflow:hidden!important;border:0!important;border-radius:0!important;box-shadow:none!important}
 html.dark #result .cd-candidate-table{border:0!important;border-radius:0!important;box-shadow:none!important}
 #result .cd-candidate-table .table-scroll{max-height:none;border-top:1px solid var(--line,rgba(120,130,160,.18));overflow:auto}
@@ -722,6 +724,7 @@ html.dark #result .cd-candidate-table{border:0!important;border-radius:0!importa
 .cd-remine-progress[aria-busy="true"] .cd-progress-track i{animation:cd-progress-shimmer 1.2s ease-in-out infinite alternate}
 @keyframes cd-progress-shimmer{from{filter:brightness(.88)}to{filter:brightness(1.3)}}
 @media(max-width:760px){
+  #result #candMetrics>.cd-summary{grid-column:1/-1}
   .cd-page-head{grid-template-columns:38px minmax(0,1fr) auto!important;gap:9px!important}
   .cd-page-head h1{font-size:20px!important}
   .cd-page-head .cd-page-actions{grid-column:3;grid-row:1}
