@@ -11,7 +11,7 @@ class PeopleDataLabsAdapter implements SourceAdapterInterface
     private const ENDPOINT = 'https://api.peopledatalabs.com/v5/person/search';
 
     /** Only request the professional fields NovaMine uses. */
-    private const DATA_FIELDS = 'id,full_name,first_name,last_name,job_title,job_company_name,job_company_industry,industry,location_name,location_locality,location_region,location_country,linkedin_url,github_url,work_email,skills,inferred_years_experience,summary';
+    private const DATA_FIELDS = 'id,full_name,first_name,last_name,job_title,job_company_name,job_company_industry,industry,location_name,location_locality,location_region,location_country,linkedin_url,github_url,work_email,phone_numbers,skills,inferred_years_experience,summary';
 
     public function name(): string
     {
@@ -100,6 +100,8 @@ class PeopleDataLabsAdapter implements SourceAdapterInterface
                     if (is_string($personSkills)) {
                         $personSkills = preg_split('/[,;]+/', $personSkills) ?: [];
                     }
+                    $email = $this->contactValue($person['work_email'] ?? null);
+                    $phone = $this->contactValue($person['phone_numbers'] ?? null);
 
                     $records[] = [
                         'name' => $name,
@@ -113,7 +115,8 @@ class PeopleDataLabsAdapter implements SourceAdapterInterface
                             $person['location_region'] ?? null,
                             $person['location_country'] ?? null,
                         ])),
-                        'email' => $person['work_email'] ?? null,
+                        'email' => $email,
+                        'phone' => $phone,
                         'profile_url' => $profileUrl,
                         'source_url' => $profileUrl,
                         'source_name' => $this->name(),
@@ -149,5 +152,27 @@ class PeopleDataLabsAdapter implements SourceAdapterInterface
         }
 
         return null;
+    }
+
+    private function contactValue(mixed $value): ?string
+    {
+        if (is_array($value)) {
+            foreach ($value as $item) {
+                if (is_string($item) && trim($item) !== '') {
+                    return trim($item);
+                }
+                if (is_array($item)) {
+                    foreach (['address', 'number', 'value'] as $key) {
+                        if (is_string($item[$key] ?? null) && trim($item[$key]) !== '') {
+                            return trim($item[$key]);
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        return is_string($value) && trim($value) !== '' ? trim($value) : null;
     }
 }

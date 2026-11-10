@@ -712,6 +712,8 @@ html.dark #result .cd-candidate-table{border:0!important;border-radius:0!importa
 .cd-skills-cell{display:grid;gap:5px}
 .cd-linkedin-wrap{display:flex;gap:4px;align-items:baseline;color:var(--muted,#788198);font-size:10px}
 .cd-linkedin{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cd-name-contact{margin-top:5px;color:var(--muted,#788198);font-size:10px;line-height:1.4}
+.cd-name-contact a{color:#7144c9}
 .cd-row-actions{display:flex;align-items:center;justify-content:flex-start;gap:7px}
 .cd-row-actions .cd-remine,.cd-row-actions .cd-delete{width:36px;height:34px;padding:0;border-radius:8px}
 .cd-row-actions [data-tooltip]::after{position:absolute;z-index:20;right:0;top:calc(100% + 8px);padding:7px 9px;border-radius:6px;background:#171a29;color:#fff;font-size:11px;font-weight:600;white-space:nowrap;content:attr(data-tooltip);opacity:0;pointer-events:none}
