@@ -118,7 +118,7 @@ class Candidate extends Model
             'email' => $this->professional_email,
             'phone' => $this->phone,
             'linkedin_id' => $linkedinId,
-            'profile_url' => $this->profile_url,
+            'profile_url' => $this->profile_url ?: $this->source_url ?: $this->portfolio_url,
             'skills' => $this->relationLoaded('skills') ? $this->skills->pluck('name')->all() : [],
             'is_synthetic' => $this->is_synthetic,
             'source_name' => $this->source_name,

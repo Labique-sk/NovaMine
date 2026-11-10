@@ -88,6 +88,7 @@ class TavilySearchAdapter implements SourceAdapterInterface
                     $skills,
                     fn (string $skill) => str_contains($haystack, mb_strtolower($skill))
                 ));
+                $email = $this->publicEmailFromSnippet($snippet);
 
                 $records[] = [
                     'name' => $name,
@@ -95,6 +96,7 @@ class TavilySearchAdapter implements SourceAdapterInterface
                     'industry' => trim((string) ($criteria['industry'] ?? '')) ?: null,
                     'skills' => $matchedSkills,
                     'location' => null,
+                    'email' => $email,
                     'profile_url' => $url,
                     'source_url' => $url,
                     'source_name' => $this->name(),
@@ -121,6 +123,20 @@ class TavilySearchAdapter implements SourceAdapterInterface
         }
 
         return false;
+    }
+
+    private function publicEmailFromSnippet(string $snippet): ?string
+    {
+        if (preg_match('/(?<![a-z0-9._%+-])[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}(?![a-z0-9.-])/i', $snippet, $match) !== 1) {
+            return null;
+        }
+
+        $email = strtolower($match[0]);
+        if (preg_match('/@(example|test|invalid)\./i', $email) === 1) {
+            return null;
+        }
+
+        return $email;
     }
 
     private function personNameFromTitle(string $title): string
