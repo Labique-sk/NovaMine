@@ -904,3 +904,7 @@ html:not(.dark) .admin-metric b{color:#6746d8}
 #result .cd-candidate-table th:nth-child(9){width:13%}
 #result .cd-candidate-table tbody td.cd-serial{text-align:center;color:#7a8496!important;font-variant-numeric:tabular-nums;white-space:nowrap}
 #result .cd-candidate-table tbody td:nth-child(2) b{color:#344158!important;font-weight:650!important}
+#result .cd-candidate-table .cd-page-numbers{display:inline-flex;align-items:center;gap:5px}
+#result .cd-candidate-table .cd-page-numbers button{min-width:34px;height:34px;padding:0 9px}
+#result .cd-candidate-table .cd-page-numbers button.current{background:#6746d8!important;color:#fff!important;border-color:#6746d8!important}
+#result .cd-candidate-table .cd-page-ellipsis{padding:0 3px;color:#718096}
