@@ -693,11 +693,30 @@ html.dark .cd-delete{color:#ff9ca6;border-color:rgba(255,156,166,.3)}
 .cd-summary-stats>div{min-width:0;padding-left:15px;border-left:1px solid var(--line,rgba(120,130,160,.18))}
 .cd-summary-stats strong{display:block;margin-bottom:4px;color:var(--text,#202840);font-size:15px}
 .cd-summary-stats span{overflow-wrap:anywhere}
-.cd-candidate-table{overflow:hidden!important;border:0!important;border-radius:0!important;box-shadow:none!important}
-html.dark #result .cd-candidate-table{border:0!important;border-radius:0!important;box-shadow:none!important}
-#result .cd-candidate-table .table-scroll{max-height:none;border-top:1px solid var(--line,rgba(120,130,160,.18));overflow:auto}
+#result .cd-candidate-table,html.dark #result .cd-candidate-table{overflow:hidden!important;background:#fff!important;color:#172033!important;border:1px solid #dfe3e9!important;border-radius:14px!important;box-shadow:0 2px 8px rgba(15,23,42,.06)!important}
+#result .cd-candidate-table::before,#result .cd-candidate-table::after{display:none!important}
+#result .cd-candidate-table>.card-head{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:20px!important;padding:20px 22px!important;background:#fff!important;border-bottom:1px solid #e2e6ec!important}
+#result .cd-candidate-table>.card-head h3{margin:0 0 5px!important;color:#172033!important;font-size:18px!important;font-weight:700!important;letter-spacing:-.02em}
+#result .cd-candidate-table>.card-head .sub{color:#718096!important;font-size:12px!important}
+#result .cd-search-field{display:flex;align-items:center;gap:10px;width:min(100%,320px);height:42px;padding:0 12px;border:1px solid #bcc7d5;border-radius:7px;background:#fff;color:#91a0b4;box-sizing:border-box}
+#result .cd-search-field:focus-within{border-color:#496887;box-shadow:0 0 0 3px rgba(73,104,135,.12)}
+#result .cd-search-field svg{width:17px;height:17px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+#result #candSearch{width:100%!important;min-width:0!important;height:100%;padding:0!important;border:0!important;border-radius:0!important;outline:0;box-shadow:none!important;background:transparent!important;color:#172033!important;font-size:13px!important}
+#result #candSearch::placeholder{color:#8b9bb0;opacity:1}
+#result .cd-candidate-table .table-scroll{max-height:none;border-top:0;overflow:auto}
 #result .cd-candidate-table table{min-width:1120px;table-layout:fixed;white-space:normal}
-#result .cd-candidate-table th,#result .cd-candidate-table td{padding:13px 12px;vertical-align:top;overflow-wrap:anywhere}
+#result .cd-candidate-table thead th{padding:14px 16px!important;background:#fff!important;color:#172033!important;border-bottom:1px solid #dfe3e9!important;font-size:13px!important;font-weight:650!important;letter-spacing:0!important;text-transform:none!important}
+#result .cd-candidate-table tbody td{padding:15px 16px!important;vertical-align:middle!important;color:#65758c!important;border-bottom:1px solid #e7eaef!important;font-size:13px!important;line-height:1.45!important}
+#result .cd-candidate-table tbody tr:last-child td{border-bottom:0!important}
+#result .cd-candidate-table tbody tr:hover{background:#f7f9fc!important}
+#result .cd-candidate-table tbody tr:hover td{background:transparent!important}
+#result .cd-candidate-table tbody td:first-child b{color:#26354b!important;font-weight:650!important}
+#result .cd-candidate-table .cd-chip{background:#f1f4f8!important;border:1px solid #e0e6ed!important;border-radius:4px!important;color:#52647b!important;font-size:11px!important;padding:4px 7px!important}
+#result .cd-candidate-table .pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px!important;border-top:1px solid #e2e6ec!important;background:#fff!important;color:#718096!important;font-size:12px!important}
+#result .cd-candidate-table .pages{gap:8px}
+#result .cd-candidate-table .pages button{min-width:40px;height:34px;padding:0 10px;border:1px solid #d6dde6;border-radius:6px;background:#fff;color:#26354b;font-size:12px;font-weight:600}
+#result .cd-candidate-table .pages button:hover:not(:disabled){background:#f4f6f9;border-color:#aebaca}
+#result .cd-candidate-table .pages button:disabled{opacity:.45}
 #result .cd-candidate-table th:nth-child(1){width:14%}
 #result .cd-candidate-table th:nth-child(2){width:14%}
 #result .cd-candidate-table th:nth-child(3){width:12%}
@@ -710,7 +729,8 @@ html.dark #result .cd-candidate-table{border:0!important;border-radius:0!importa
 #result .cd-candidate-table th[data-sort]:hover{color:#7044cf}
 #result .cd-candidate-table th[aria-sort="ascending"]::after{content:" ↑"}
 #result .cd-candidate-table th[aria-sort="descending"]::after{content:" ↓"}
-#result .cd-candidate-table td a{color:#7144c9;text-decoration:underline;text-underline-offset:2px}
+#result .cd-candidate-table td a{color:#365e88;text-decoration:underline;text-underline-offset:2px}
+#result .cd-candidate-table th[data-sort]:hover{color:#365e88!important}
 .cd-skills-cell{display:grid;gap:5px}
 .cd-linkedin-wrap{display:flex;gap:4px;align-items:baseline;color:var(--muted,#788198);font-size:10px}
 .cd-linkedin{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -734,8 +754,11 @@ html.dark #result .cd-candidate-table{border:0!important;border-radius:0!importa
   .cd-summary-stats{gap:6px}
   .cd-summary-stats>div{padding-left:9px}
   .cd-summary-stats strong{font-size:13px}
-  #result .cd-candidate-table .card-head{display:flex;align-items:stretch}
-  #result .cd-candidate-table .table-tools{width:100%}
+  #result .cd-candidate-table>.card-head{flex-direction:column!important;align-items:stretch!important;gap:12px!important;padding:16px!important}
+  #result .cd-search-field{width:100%;max-width:none}
+  #result .cd-candidate-table .pagination{padding:12px!important}
+  #result .cd-candidate-table .pages{gap:6px}
+  #result .cd-candidate-table .pages button{min-width:36px;padding:0 8px;font-size:11px}
 }
 .cd-remine-progress{margin:0 0 16px;padding:12px 14px;border:1px solid var(--line,rgba(150,160,190,.2));border-radius:12px;background:rgba(124,92,255,.06);color:var(--text,#202840);font-size:12px;font-weight:650}
 .cd-progress-track{height:6px;margin-top:9px;overflow:hidden;border-radius:999px;background:rgba(124,92,255,.16)}
