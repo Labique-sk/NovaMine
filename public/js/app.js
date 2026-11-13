@@ -83,8 +83,8 @@
     applyTheme();
 
     const application = $("application");
-    const topRight = document.querySelector(".app-top-right");
-    if (application && topRight && !topRight.querySelector(".sb-toggle")) {
+    const sidebarBrand = document.querySelector(".sidebar-brand");
+    if (application && sidebarBrand && !sidebarBrand.querySelector(".sb-toggle")) {
       const toggle = document.createElement("button");
       toggle.type = "button";
       toggle.className = "sb-toggle";
@@ -96,7 +96,7 @@
         toggle.setAttribute("aria-expanded", String(!collapsed));
         toggle.setAttribute("aria-label", collapsed ? "Show navigation labels" : "Hide navigation labels");
       });
-      topRight.appendChild(toggle);
+      sidebarBrand.appendChild(toggle);
       if (window.innerWidth <= 760) application.classList.add("sb-collapsed");
       toggle.setAttribute("aria-expanded", String(!application.classList.contains("sb-collapsed")));
       toggle.setAttribute("aria-label", application.classList.contains("sb-collapsed") ? "Show navigation labels" : "Hide navigation labels");
@@ -510,7 +510,8 @@
       const average = meta.average_match_score == null ? "—" : `${Number(meta.average_match_score)}%`;
       $("candMetrics").innerHTML = summaryCard("Candidate records", candidateTotal.toLocaleString(), [[Number(meta.verified_total || 0).toLocaleString(), "Verified"], [average, "Average match score"], [Number(meta.last_page || 1).toLocaleString(), "Result pages"]]);
       $("candRows").innerHTML = rows.map((candidate) => {
-        const skills = (candidate.skills || []).slice(0, 4).map((skill) => `<span class="cd-chip">${esc(skill)}</span>`).join("") || "—";
+        const candidateSkills = candidate.skills || [];
+        const skills = candidateSkills.slice(0, 2).map((skill) => `<span class="cd-chip">${esc(skill)}</span>`).join("") + (candidateSkills.length > 2 ? `<span class="cd-chip cd-more-skills">+${candidateSkills.length - 2}</span>` : "") || "—";
         const profileLink = candidate.profile_url
           ? `<a class="cd-linkedin" href="${esc(candidate.profile_url)}" target="_blank" rel="noopener noreferrer" aria-label="Open candidate public profile">${candidate.linkedin_id ? `LinkedIn ID ${esc(candidate.linkedin_id)}` : "Open public profile ↗"}</a>`
           : "";

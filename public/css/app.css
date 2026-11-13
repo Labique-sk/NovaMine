@@ -825,3 +825,51 @@ html.dark .admin-status.is-deactivated{color:#ff9ca6;background:#47242c}
   #profile .admin-table-wrap tr{grid-template-columns:minmax(0,1fr);gap:9px}
   #profile .admin-table-wrap td[data-label="User"],#profile .admin-table-wrap td[data-label="Actions"]{grid-column:auto}
 }
+
+/* Workspace shell: keep the brand and primary navigation together in a left rail. */
+@media(min-width:761px){
+  #application:not(.hidden){display:grid!important;grid-template-columns:220px minmax(0,1fr);grid-template-rows:58px minmax(calc(100vh - 58px),auto)}
+  #application>.app-top{grid-column:2;grid-row:1;height:58px;position:sticky;top:0;z-index:9;padding:0 24px}
+  #application>.app-body{display:contents}
+  #application .sidebar{grid-column:1;grid-row:1/3;position:sticky;top:0;height:100vh;min-height:100vh;padding:17px 10px 12px;z-index:10}
+  #application .workspace-main{grid-column:2;grid-row:2;width:100%;max-width:none;min-width:0;margin:0!important;padding:22px clamp(20px,2.4vw,36px) 34px}
+  #application.sb-collapsed:not(.hidden){grid-template-columns:76px minmax(0,1fr)}
+  #application .sidebar-brand{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 7px 19px;border-bottom:1px solid rgba(167,122,232,.16);margin-bottom:10px}
+  #application .sidebar-brand .brand{min-width:0;gap:9px;font-size:16px;white-space:nowrap}
+  #application .sidebar-brand .brand .logo{width:32px;height:32px;flex-basis:32px}
+  #application .sidebar-brand .sb-toggle{width:32px;height:32px;flex:0 0 32px;margin:0}
+  #application.sb-collapsed .sidebar-brand{justify-content:space-between;gap:4px;padding-left:0;padding-right:0}
+  #application.sb-collapsed .sidebar-brand .brand{font-size:0;gap:0}
+  #application.sb-collapsed .sidebar-brand .brand .logo{width:26px;height:26px;flex-basis:26px}
+  #application.sb-collapsed .sidebar-brand .sb-toggle{position:static;width:26px;height:26px;flex:0 0 26px;opacity:.9}
+}
+@media(max-width:760px){
+  #application .sidebar-brand{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px 8px;margin:0 0 5px;border-bottom:1px solid rgba(167,122,232,.16)}
+  #application .sidebar-brand .brand{font-size:14px;gap:8px;white-space:nowrap}
+  #application .sidebar-brand .brand .logo{width:29px;height:29px;flex-basis:29px}
+  #application .sidebar-brand .sb-toggle{width:32px;height:32px;flex:0 0 32px;margin:0}
+  #application .app-top-right .sb-toggle{display:none}
+}
+
+/* Candidate records: compact, row based directory styling like the supplied reference. */
+#result .cd-candidate-table .table-scroll{border-top:1px solid #e2e6ec!important}
+#result .cd-candidate-table table{min-width:1160px!important;table-layout:fixed!important}
+#result .cd-candidate-table thead th{padding:13px 14px!important;background:#f8f9fb!important;color:#283247!important;border-bottom:1px solid #dfe3e9!important;font-size:12px!important;font-weight:650!important;letter-spacing:.01em!important}
+#result .cd-candidate-table tbody td{padding:12px 14px!important;vertical-align:middle!important;color:#66758b!important;border-bottom:1px solid #e4e7ec!important;font-size:12px!important;line-height:1.45!important;overflow-wrap:anywhere}
+#result .cd-candidate-table tbody tr{height:56px}
+#result .cd-candidate-table tbody tr:hover{background:#f7f8fa!important}
+#result .cd-candidate-table tbody td:first-child b{color:#344158!important;font-weight:650!important}
+#result .cd-candidate-table tbody td:nth-child(5),#result .cd-candidate-table tbody td:nth-child(7){white-space:nowrap}
+#result .cd-candidate-table tbody td:nth-child(6){overflow-wrap:anywhere}
+#result .cd-candidate-table .cd-skills-cell{display:flex!important;align-items:center;flex-wrap:wrap;gap:4px;max-height:52px;overflow:hidden}
+#result .cd-candidate-table .cd-chip{display:inline-flex;align-items:center;max-width:100%;margin:0!important;padding:4px 7px!important;background:#f2f4f7!important;border:1px solid #e1e5eb!important;border-radius:4px!important;color:#52647b!important;font-size:10px!important;line-height:1.2}
+#result .cd-candidate-table .cd-linkedin-wrap{flex:0 0 100%;min-width:0}
+#result .cd-candidate-table .cd-linkedin{max-width:100%;color:#365e88!important}
+#result .cd-candidate-table .cd-name-contact{margin-top:3px;font-size:10px}
+#result .cd-candidate-table .pagination{padding:13px 18px!important}
+@media(max-width:760px){
+  #result .cd-candidate-table .table-scroll{overscroll-behavior-x:contain}
+  #result .cd-candidate-table table{min-width:1160px!important}
+  #result .cd-candidate-table .pagination{align-items:flex-start;flex-direction:column}
+  #result .cd-candidate-table .pages{align-self:flex-end}
+}
