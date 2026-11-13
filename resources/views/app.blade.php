@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#050716">
 <title>NovaMine — Company Data Intelligence</title>
 <link rel="icon" type="image/svg+xml" href="{{ asset('novamine-mark.svg') }}">
-<link rel="stylesheet" href="{{ asset('css/app.css') }}?v=20261113-candidate-table-top-v4">
+<link rel="stylesheet" href="{{ asset('css/app.css') }}?v=20261113-theme-contrast-v5">
 </head>
 <body data-authenticated="{{ auth()->check() ? '1' : '0' }}">
 <a class="skip-link" href="#homePublic">Skip to content</a>

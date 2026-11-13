@@ -873,3 +873,23 @@ html.dark .admin-status.is-deactivated{color:#ff9ca6;background:#47242c}
   #result .cd-candidate-table .pagination{align-items:flex-start;flex-direction:column}
   #result .cd-candidate-table .pages{align-self:flex-end}
 }
+
+/* Keep shared text and surface tokens aligned with the active theme. */
+html.dark{
+  --bg:#07080c;
+  --glass:rgba(255,255,255,.05);
+  --glass2:rgba(255,255,255,.035);
+  --line:rgba(255,255,255,.1);
+  --text:#f4f5fa;
+  --muted:#a1a6b5;
+  --ink:#f4f5fa;
+  --surface:rgba(255,255,255,.05);
+  --surface-soft:rgba(255,255,255,.035);
+  --accent:#a78bfa;
+  --accent-soft:rgba(167,139,250,.14);
+}
+html.dark .cd-icon-button{background:rgba(255,255,255,.06)!important;color:#f4f5fa!important;border-color:rgba(255,255,255,.14)!important}
+html.dark .cd-icon-button:hover{background:rgba(255,255,255,.12)!important;color:#fff!important}
+html.dark .admin-metric b{color:#c4b5fd!important}
+html:not(.dark) .cd-icon-button{background:#fff;color:#202840;border-color:#d9dce7}
+html:not(.dark) .admin-metric b{color:#6746d8}
