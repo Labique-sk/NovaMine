@@ -893,3 +893,14 @@ html.dark .cd-icon-button:hover{background:rgba(255,255,255,.12)!important;color
 html.dark .admin-metric b{color:#c4b5fd!important}
 html:not(.dark) .cd-icon-button{background:#fff;color:#202840;border-color:#d9dce7}
 html:not(.dark) .admin-metric b{color:#6746d8}
+#result .cd-candidate-table th:nth-child(1){width:6%}
+#result .cd-candidate-table th:nth-child(2){width:14%}
+#result .cd-candidate-table th:nth-child(3){width:13%}
+#result .cd-candidate-table th:nth-child(4){width:11%}
+#result .cd-candidate-table th:nth-child(5){width:11%}
+#result .cd-candidate-table th:nth-child(6){width:8%}
+#result .cd-candidate-table th:nth-child(7){width:15%}
+#result .cd-candidate-table th:nth-child(8){width:9%}
+#result .cd-candidate-table th:nth-child(9){width:13%}
+#result .cd-candidate-table tbody td.cd-serial{text-align:center;color:#7a8496!important;font-variant-numeric:tabular-nums;white-space:nowrap}
+#result .cd-candidate-table tbody td:nth-child(2) b{color:#344158!important;font-weight:650!important}
