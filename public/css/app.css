@@ -694,6 +694,8 @@ html.dark .cd-delete{color:#ff9ca6;border-color:rgba(255,156,166,.3)}
 .cd-summary-stats>div{min-width:0;padding-left:15px;border-left:1px solid var(--line,rgba(120,130,160,.18))}
 .cd-summary-stats strong{display:block;margin-bottom:4px;color:var(--text,#202840);font-size:15px}
 .cd-summary-stats span{overflow-wrap:anywhere}
+#resultSet .cd-summary-stats>div{display:flex;flex-direction:column-reverse;align-items:flex-start;gap:5px}
+#resultSet .cd-summary-stats strong{margin:0}
 #result .cd-candidate-table,html.dark #result .cd-candidate-table{overflow:hidden!important;background:#fff!important;color:#172033!important;border:1px solid #dfe3e9!important;border-radius:14px!important;box-shadow:0 2px 8px rgba(15,23,42,.06)!important}
 #result .cd-candidate-table::before,#result .cd-candidate-table::after{display:none!important}
 #result .cd-candidate-table>.card-head{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:20px!important;padding:20px 22px!important;background:#fff!important;border-bottom:1px solid #e2e6ec!important}
