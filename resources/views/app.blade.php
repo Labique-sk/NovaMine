@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#050716">
 <title>NovaMine — Company Data Intelligence</title>
 <link rel="icon" type="image/svg+xml" href="{{ asset('novamine-mark.svg') }}">
-<link rel="stylesheet" href="{{ asset('css/app.css') }}?v=20261114-candidate-dark-pages-v8">
+<link rel="stylesheet" href="{{ asset('css/app.css') }}?v=20261114-candidate-type-light-auth-v9">
 </head>
 <body data-authenticated="{{ auth()->check() ? '1' : '0' }}">
 <a class="skip-link" href="#homePublic">Skip to content</a>
@@ -52,6 +52,6 @@
 <section class="page" id="about"><div class="page-head"><div><div class="eyebrow">ABOUT NOVAMINE</div><h1>About Us</h1><p>Purpose-built data discovery and mining workspace.</p></div></div><div class="glass about-hero"><div><div class="eyebrow">OUR MISSION</div><h2>Make data more <span class="gradient-text">useful and accessible.</span></h2><p>NovaMine brings data mining configuration, records, results and analytics into one organised workspace. The interface is designed to make each step easier to understand and manage.</p></div><div class="hero-art" style="height:230px"><div class="orb" style="width:210px;height:210px"><div class="cube" style="width:85px;height:85px">✧</div></div></div></div><div class="cards feature-cards"><article class="glass feature-card"><strong>Smart discovery</strong><p>Filter by role, country, industry and keywords.</p></article><article class="glass feature-card"><strong>Organised records</strong><p>Review previously generated records in a paginated table.</p></article><article class="glass feature-card"><strong>Useful analytics</strong><p>Understand mining progress and record distribution.</p></article></div><div class="glass contact-card dashboard-contact"><div class="contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3.5 6.5h17v11h-17z"/><path d="m4 7 8 6 8-6"/></svg></div><div class="contact-copy"><div class="eyebrow">CONTACT US</div><h2>Talk to Labique</h2><p>Questions, feedback, or collaboration ideas? Get in touch.</p><div class="contact-actions"><a class="btn" href="mailto:labiqueshaikh470@gmail.com"><svg class="mail-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.5 6.5h17v11h-17z"/><path d="m4 7 8 6 8-6"/></svg>labiqueshaikh470@gmail.com</a><a class="btn outline" href="https://www.linkedin.com/in/labique-shaikh-79169b289" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a></div></div></div></section>
 </main></div></div>
 <div class="toast" id="toast"></div>
-<script src="{{ asset('js/app.js') }}?v=20261114-candidate-dark-pages-v8" defer></script>
+<script src="{{ asset('js/app.js') }}?v=20261114-candidate-type-search-focus-v9" defer></script>
 </body>
 </html>

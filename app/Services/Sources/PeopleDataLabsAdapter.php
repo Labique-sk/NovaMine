@@ -22,7 +22,10 @@ class PeopleDataLabsAdapter implements SourceAdapterInterface
     {
         $apiKey = trim((string) config('services.pdl.api_key'));
         $role = trim((string) ($criteria['role'] ?? ''));
-        if (! config('services.pdl.enabled', false) || $apiKey === '' || $role === '') {
+        // PDL's resume dataset contains working professionals, so do not return
+        // those profiles when the user explicitly asks for students.
+        if (strcasecmp(trim((string) ($criteria['candidate_type'] ?? '')), 'student') === 0
+            || ! config('services.pdl.enabled', false) || $apiKey === '' || $role === '') {
             return [];
         }
 

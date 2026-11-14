@@ -41,6 +41,9 @@ class TavilySearchAdapter implements SourceAdapterInterface
         if ($skills !== []) {
             $queryParts[] = implode(' ', array_slice($skills, 0, 5));
         }
+        if (strcasecmp(trim((string) ($criteria['candidate_type'] ?? '')), 'student') === 0) {
+            $queryParts[] = '(student OR undergraduate OR graduate OR intern OR "recent graduate")';
+        }
         $queryParts[] = '(profile OR portfolio OR resume OR CV OR biography)';
 
         try {
