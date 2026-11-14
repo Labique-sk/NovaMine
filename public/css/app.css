@@ -908,3 +908,28 @@ html:not(.dark) .admin-metric b{color:#6746d8}
 #result .cd-candidate-table .cd-page-numbers button{min-width:34px;height:34px;padding:0 9px}
 #result .cd-candidate-table .cd-page-numbers button.current{background:#6746d8!important;color:#fff!important;border-color:#6746d8!important}
 #result .cd-candidate-table .cd-page-ellipsis{padding:0 3px;color:#718096}
+#result .cd-candidate-table .cd-page-numbers button.current{height:44px;min-width:44px;flex-direction:column;gap:1px}
+#result .cd-candidate-table .cd-page-numbers button.current::before{content:"Page";font-size:8px;font-weight:600;line-height:1.1}
+
+/* Candidate table follows the dark workspace palette when dark mode is active. */
+html.dark #result .cd-candidate-table{background:linear-gradient(155deg,rgba(25,26,38,.96),rgba(13,14,21,.98))!important;color:#f4f5fa!important;border-color:rgba(255,255,255,.12)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 20px 50px rgba(0,0,0,.32)!important}
+html.dark #result .cd-candidate-table>.card-head{background:transparent!important;border-bottom-color:rgba(255,255,255,.1)!important}
+html.dark #result .cd-candidate-table>.card-head h3{color:#f4f5fa!important}
+html.dark #result .cd-candidate-table>.card-head .sub{color:#a1a6b5!important}
+html.dark #result .cd-search-field{background:rgba(255,255,255,.045)!important;border-color:rgba(255,255,255,.16)!important;color:#a1a6b5!important}
+html.dark #result .cd-search-field:focus-within{border-color:#a78bfa!important;box-shadow:0 0 0 3px rgba(167,139,250,.16)!important}
+html.dark #result #candSearch{color:#f4f5fa!important}
+html.dark #result #candSearch::placeholder{color:#a1a6b5!important}
+html.dark #result .cd-candidate-table .table-scroll{border-top-color:rgba(255,255,255,.1)!important}
+html.dark #result .cd-candidate-table thead th{background:#171923!important;color:#cbd0dc!important;border-bottom-color:rgba(255,255,255,.12)!important}
+html.dark #result .cd-candidate-table tbody td{background:transparent!important;color:#c1c6d2!important;border-bottom-color:rgba(255,255,255,.09)!important}
+html.dark #result .cd-candidate-table tbody tr:hover{background:rgba(167,139,250,.075)!important}
+html.dark #result .cd-candidate-table tbody td:nth-child(2) b{color:#f4f5fa!important}
+html.dark #result .cd-candidate-table td a{color:#c4b5fd!important}
+html.dark #result .cd-candidate-table .cd-name-contact{color:#a1a6b5!important}
+html.dark #result .cd-candidate-table .cd-chip{background:rgba(255,255,255,.07)!important;border-color:rgba(255,255,255,.12)!important;color:#d8dbea!important}
+html.dark #result .cd-candidate-table .pagination{background:transparent!important;color:#a1a6b5!important;border-top-color:rgba(255,255,255,.1)!important}
+html.dark #result .cd-candidate-table .pages button{background:rgba(255,255,255,.05)!important;border-color:rgba(255,255,255,.14)!important;color:#cbd0dc!important}
+html.dark #result .cd-candidate-table .pages button:hover:not(:disabled){background:rgba(255,255,255,.1)!important;border-color:rgba(255,255,255,.24)!important}
+html.dark #result .cd-candidate-table .cd-page-numbers button.current{background:#6746d8!important;border-color:#a78bfa!important;color:#fff!important}
+html.dark #result .cd-candidate-table .cd-page-ellipsis{color:#a1a6b5!important}
