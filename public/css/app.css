@@ -696,6 +696,30 @@ html.dark .cd-delete{color:#ff9ca6;border-color:rgba(255,156,166,.3)}
 .cd-summary-stats span{overflow-wrap:anywhere}
 #resultSet .cd-summary-stats>div{display:flex;flex-direction:column-reverse;align-items:flex-start;gap:5px}
 #resultSet .cd-summary-stats strong{margin:0}
+#resultSet .cd-view{display:grid;grid-template-columns:minmax(285px,.9fr) minmax(0,2fr);align-items:center;gap:18px 22px}
+#resultSet .cd-view>.cd-page-head{grid-column:1;grid-row:1;margin:0}
+#resultSet .cd-view>#histMetrics{grid-column:2;grid-row:1;min-width:0}
+#resultSet .cd-view>.cd-remine-progress{grid-column:1/-1;grid-row:2}
+#resultSet .cd-view>.table-card{grid-column:1/-1;grid-row:3;margin:0}
+#resultSet .cd-page-head .btn#cdNew{grid-column:2/4;justify-self:start;margin-top:5px}
+.cd-history-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cd-history-metric{position:relative;display:flex;align-items:center;gap:12px;min-width:0;min-height:88px;padding:14px;border:1px solid;border-radius:14px;box-sizing:border-box;overflow:hidden}
+.cd-history-metric-icon{display:grid;place-items:center;width:42px;height:42px;flex:0 0 42px;border-radius:50%;color:#fff}
+.cd-history-metric-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cd-history-metric-copy{display:grid;gap:4px;min-width:0}
+.cd-history-metric-label{font-size:11px;font-weight:600;line-height:1.25;overflow-wrap:anywhere}
+.cd-history-metric-copy strong{font-size:22px;line-height:1;font-weight:750;font-variant-numeric:tabular-nums}
+.cd-history-metric--history{background:linear-gradient(145deg,#281554,#1b123b);border-color:#8b5cf655;color:#f5edff}
+.cd-history-metric--history .cd-history-metric-icon{background:linear-gradient(145deg,#9a35f4,#6512c7);box-shadow:0 4px 18px #7c3aed55}
+.cd-history-metric--candidates{background:linear-gradient(145deg,#142052,#101634);border-color:#4f71ff55;color:#eff3ff}
+.cd-history-metric--candidates .cd-history-metric-icon{background:linear-gradient(145deg,#4f46e5,#2434bc);box-shadow:0 4px 18px #3b5bdb55}
+.cd-history-metric--completed{background:linear-gradient(145deg,#10413b,#102d30);border-color:#20c99755;color:#eafff7}
+.cd-history-metric--completed .cd-history-metric-icon{background:linear-gradient(145deg,#10b981,#07876d);box-shadow:0 4px 18px #10b98155}
+html:not(.dark) .cd-history-metric--history{background:linear-gradient(145deg,#f4edff,#ebe1ff);border-color:#d9c7ff;color:#342061}
+html:not(.dark) .cd-history-metric--candidates{background:linear-gradient(145deg,#edf1ff,#e2e8ff);border-color:#cbd6ff;color:#1e2c67}
+html:not(.dark) .cd-history-metric--completed{background:linear-gradient(145deg,#e7faf4,#d9f3ea);border-color:#bde9d7;color:#104d3d}
+@media(max-width:1050px){#resultSet .cd-view{grid-template-columns:1fr;gap:16px}#resultSet .cd-view>.cd-page-head,#resultSet .cd-view>#histMetrics,#resultSet .cd-view>.cd-remine-progress,#resultSet .cd-view>.table-card{grid-column:1;grid-row:auto}}
+@media(max-width:560px){.cd-history-metrics{grid-template-columns:1fr}.cd-history-metric{min-height:72px}.cd-history-metric-icon{width:38px;height:38px;flex-basis:38px}}
 #result .cd-candidate-table,html.dark #result .cd-candidate-table{overflow:hidden!important;background:#fff!important;color:#172033!important;border:1px solid #dfe3e9!important;border-radius:14px!important;box-shadow:0 2px 8px rgba(15,23,42,.06)!important}
 #result .cd-candidate-table::before,#result .cd-candidate-table::after{display:none!important}
 #result .cd-candidate-table>.card-head{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:20px!important;padding:20px 22px!important;background:#fff!important;border-bottom:1px solid #e2e6ec!important}

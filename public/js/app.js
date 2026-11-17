@@ -265,8 +265,13 @@
 
   function dataArray(result) { return Array.isArray(result?.data) ? result.data : []; }
   function metricCard(value, label) { return `<div class="glass metric"><b>${esc(value)}</b><span>${esc(label)}</span></div>`; }
-  function summaryCard(title, mainValue, metrics) {
-    return `<section class="glass cd-summary"><div class="cd-summary-main"><span>${esc(title)}</span><strong>${esc(mainValue)}</strong></div><div class="cd-summary-stats">${metrics.map(([value, label]) => `<div><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`).join("")}</div></section>`;
+  function historySummaryCards(searches, candidates, completed) {
+    const cards = [
+      ["history", "Mining History", searches, '<circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/>'],
+      ["candidates", "Candidate Records", candidates, '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>'],
+      ["completed", "Completed Searches", completed, '<path d="M22 11.1V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>'],
+    ];
+    return `<div class="cd-history-metrics" aria-label="Mining history summary">${cards.map(([tone, label, value, icon]) => `<div class="cd-history-metric cd-history-metric--${tone}"><span class="cd-history-metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24">${icon}</svg></span><span class="cd-history-metric-copy"><span class="cd-history-metric-label">${label}</span><strong>${esc(value)}</strong></span></div>`).join("")}</div>`;
   }
   async function loadDashboard() {
     try {
@@ -490,7 +495,7 @@
       const totalCandidates = Number(summary.candidate_records ?? historyRows.reduce((sum, row) => sum + Number(row.result_count || 0), 0));
       const completed = Number(summary.completed_searches ?? historyRows.filter((row) => row.status === "completed").length);
       const totalSearches = Number(summary.saved_searches ?? result.meta?.total ?? historyRows.length);
-      $("histMetrics").innerHTML = summaryCard("Mining history", totalSearches.toLocaleString(), [[totalCandidates.toLocaleString(), "Candidate records"], [completed.toLocaleString(), "Completed searches"]]);
+      $("histMetrics").innerHTML = historySummaryCards(totalSearches.toLocaleString(), totalCandidates.toLocaleString(), completed.toLocaleString());
       $("histRows").innerHTML = historyRows.map((row, index) => {
         const filters = row.filters || {};
         const criteria = [row.query, filters.location, filters.industry, filters.keywords].filter(Boolean).join(" · ") || "Search criteria";
